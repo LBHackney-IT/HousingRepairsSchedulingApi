@@ -68,13 +68,13 @@ commands:
       - run:
           name: Build lambda
           command: |
-            cd ./HousingManagementSystemApi/
+            cd ./HousingRepairsSchedulingApi/
             chmod +x ./build.sh
             ./build.sh
       - run:
           name: Deploy lambda
           command: |
-            cd ./HousingManagementSystemApi/
+            cd ./HousingRepairsSchedulingApi/
             sls deploy --stage <<parameters.stage>> --conceal
 jobs:
   check-code-formatting:
@@ -104,7 +104,7 @@ jobs:
           command: dotnet nuget add source --username <<parameters.lincoln-nuget-username>> --password  <<parameters.lincoln-nuget-password>>  --store-password-in-clear-text --name github "https://nuget.pkg.github.com/City-of-Lincoln-Council/index.json"
       - run:
           name: build
-          command: dotnet build HousingManagementSystemApi
+          command: dotnet build HousingRepairsSchedulingApi
       - run:
           name: Run tests
           command: dotnet test
