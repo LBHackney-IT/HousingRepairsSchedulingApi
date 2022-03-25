@@ -1,0 +1,138 @@
+version: 2.1
+
+
+orbs:
+  aws-ecr: circleci/aws-ecr@3.0.0
+  aws-cli: circleci/aws-cli@0.1.9
+  aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
+
+executors:
+  docker-python:
+    docker:
+      - image: circleci/python:3.7
+  docker-terraform:
+    docker:
+      - image: "hashicorp/terraform:light"
+  docker-dotnet:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
+
+references:
+  workspace_root: &workspace_root "~"
+  attach_workspace: &attach_workspace
+    attach_workspace:
+      at: *workspace_root
+
+commands:
+  assume-role-and-persist-workspace:
+    description: "Assumes deployment role and persists credentials across jobs"
+    parameters:
+      aws-account:
+        type: string
+    steps:
+      - checkout
+      - aws_assume_role/assume_role:
+          account: <<parameters.aws-account>>
+          profile_name: default
+          role: "LBH_Circle_CI_Deployment_Role"
+      - persist_to_workspace:
+          root: *workspace_root
+          paths:
+            - .aws
+  deploy-lambda:
+    description: "Deploys API via Serverless"
+    parameters:
+      stage:
+        type: string
+      lincoln-nuget-username:
+        type: string
+        default: $LINCOLN_NUGET_USERNAME
+      lincoln-nuget-password:
+        type: string
+        default: $LINCOLN_PACKAGES_TOKEN
+    steps:
+      - *attach_workspace
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Add HACT package
+          command: dotnet nuget add source --username <<parameters.lincoln-nuget-username>> --password  <<parameters.lincoln-nuget-password>>  --store-password-in-clear-text --name github "https://nuget.pkg.github.com/City-of-Lincoln-Council/index.json"
+      - run:
+          name: Install Node.js
+          command: |
+            curl -sL https://deb.nodesource.com/setup_14.x | bash -
+            apt-get update && apt-get install -y nodejs
+      - run:
+          name: Install serverless CLI
+          command: npm i -g serverless
+      - run:
+          name: Build lambda
+          command: |
+            cd ./HousingManagementSystemApi/
+            chmod +x ./build.sh
+            ./build.sh
+      - run:
+          name: Deploy lambda
+          command: |
+            cd ./HousingManagementSystemApi/
+            sls deploy --stage <<parameters.stage>> --conceal
+jobs:
+  check-code-formatting:
+    executor: docker-dotnet
+    steps:
+      - checkout
+      - run:
+          name: Install dotnet format
+          command: dotnet tool install dotnet-format --tool-path ./dotnet-format-local/
+      - run:
+          name: Run formatter check
+          command: ./dotnet-format-local/dotnet-format --check
+  build-and-test:
+    executor: docker-dotnet
+    parameters:
+      lincoln-nuget-username:
+        type: string
+        default: $LINCOLN_NUGET_USERNAME
+      lincoln-nuget-password:
+        type: string
+        default: $LINCOLN_PACKAGES_TOKEN
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Add HACT package
+          command: dotnet nuget add source --username <<parameters.lincoln-nuget-username>> --password  <<parameters.lincoln-nuget-password>>  --store-password-in-clear-text --name github "https://nuget.pkg.github.com/City-of-Lincoln-Council/index.json"
+      - run:
+          name: build
+          command: dotnet build HousingManagementSystemApi
+      - run:
+          name: Run tests
+          command: dotnet test
+  deploy-to-development:
+    executor: docker-dotnet
+    steps:
+      - deploy-lambda:
+          stage: "development"
+  assume-role-development:
+    executor: docker-python
+    steps:
+      - assume-role-and-persist-workspace:
+          aws-account: $AWS_ACCOUNT_DEVELOPMENT
+
+workflows:
+  check-and-deploy-development:
+    jobs:
+      - check-code-formatting:
+          context: api-nuget-token-context
+      - build-and-test:
+          context: api-nuget-token-context
+      - assume-role-development:
+          context: api-assume-role-housing-development-context
+          requires:
+            - build-and-test
+          filters:
+            branches:
+              only: development
+      - deploy-to-development:
+          requires:
+            - assume-role-development
