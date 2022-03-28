@@ -47,17 +47,6 @@ commands:
     steps:
       - *attach_workspace
       - checkout
-      - run:
-          command: |
-            cd ./terraform/<<parameters.environment>>/
-            terraform get -update=true
-            terraform init
-          name: get and init
-      - run:
-          name: apply
-          command: |
-            cd ./terraform/<<parameters.environment>>/
-            terraform destroy -auto-approve
   deploy-lambda:
     description: "Deploys API via Serverless"
     parameters:
@@ -137,12 +126,6 @@ jobs:
     steps:
       - assume-role-and-persist-workspace:
           aws-account: $AWS_ACCOUNT_DEVELOPMENT
-  terraform-init-and-apply-to-development:
-    executor: docker-terraform
-    steps:
-      - terraform-init-then-apply:
-          environment: "development"
-
 workflows:
   check-and-deploy-development:
     jobs:
@@ -157,12 +140,6 @@ workflows:
           filters:
             branches:
               only: development
-      - terraform-init-and-apply-to-development:
-          requires:
-            - assume-role-development
-          filters:
-            branches:
-              only: development
       - deploy-to-development:
           requires:
-            - terraform-init-and-apply-to-development
+            - assume-role-development
