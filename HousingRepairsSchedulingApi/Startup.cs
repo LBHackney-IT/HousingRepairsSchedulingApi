@@ -36,7 +36,7 @@ namespace HousingRepairsSchedulingApi
             services.AddTransient<IRetrieveAvailableAppointmentsUseCase, RetrieveAvailableAppointmentsUseCase>();
             services.AddTransient<IBookAppointmentUseCase, BookAppointmentUseCase>();
 
-            this.ConfigureOptions(services);
+            // this.ConfigureOptions(services);
 
             services.AddScoped<SOAP>(sp =>
             {
@@ -66,10 +66,10 @@ namespace HousingRepairsSchedulingApi
                 c.AddJwtSecurityScheme();
             });
 
-            var address = Configuration.GetSection(nameof(DrsOptions))[DrsOptionsApiAddressConfigurationKey];
-            var addressHost = new Uri(address).Host;
-            services.AddHealthChecks()
-                .AddTcpHealthCheck(options => options.AddHost(addressHost, 80), name: "DRS Host TCP Ping");
+            // var address = Configuration.GetSection(nameof(DrsOptions))[DrsOptionsApiAddressConfigurationKey];
+            // var addressHost = new Uri(address).Host;
+            services.AddHealthChecks();
+            // .AddTcpHealthCheck(options => options.AddHost(addressHost, 80), name: "DRS Host TCP Ping");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
