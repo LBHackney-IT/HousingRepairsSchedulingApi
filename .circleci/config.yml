@@ -39,19 +39,8 @@ commands:
           root: *workspace_root
           paths:
             - .aws
-  terraform-init-then-apply:
-    description: "Initializes and applies terraform configuration"
+  authenticate-nuget:
     parameters:
-      environment:
-        type: string
-    steps:
-      - *attach_workspace
-      - checkout
-  deploy-lambda:
-    description: "Deploys API via Serverless"
-    parameters:
-      stage:
-        type: string
       lincoln-nuget-username:
         type: string
         default: $LINCOLN_NUGET_USERNAME
@@ -59,12 +48,18 @@ commands:
         type: string
         default: $LINCOLN_PACKAGES_TOKEN
     steps:
-      - *attach_workspace
-      - checkout
-      - setup_remote_docker
       - run:
           name: Add HACT package
           command: dotnet nuget add source --username <<parameters.lincoln-nuget-username>> --password  <<parameters.lincoln-nuget-password>>  --store-password-in-clear-text --name github "https://nuget.pkg.github.com/City-of-Lincoln-Council/index.json"
+  deploy-lambda:
+    description: "Deploys API via Serverless"
+    parameters:
+      stage:
+        type: string
+    steps:
+      - *attach_workspace
+      - checkout
+      - setup_remote_docker
       - run:
           name: Install Node.js
           command: |
