@@ -46,7 +46,7 @@ commands:
         default: $LINCOLN_PACKAGES_TOKEN
     steps:
       - run:
-          name: Add Lincoln Nuget Source
+          name: Add Nuget Source
           command: dotnet nuget add source --username <<parameters.lincoln-nuget-username>> --password  <<parameters.lincoln-nuget-password>>  --store-password-in-clear-text --name github "https://nuget.pkg.github.com/City-of-Lincoln-Council/index.json"
   deploy-lambda:
     description: "Deploys API via Serverless"
@@ -131,7 +131,7 @@ jobs:
     executor: docker-python
     steps:
       - assume-role-and-persist-workspace:
-          aws-account: $AWS_ACCOUNT_DEVELOPMENT
+          aws-account: $AWS_ACCOUNT_PRODUCTION
 workflows:
   check-and-deploy-development:
     jobs:
