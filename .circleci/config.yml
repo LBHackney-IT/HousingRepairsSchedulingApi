@@ -10,9 +10,6 @@ executors:
   docker-python:
     docker:
       - image: circleci/python:3.7
-  docker-terraform:
-    docker:
-      - image: "hashicorp/terraform:light"
   docker-dotnet:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
@@ -92,19 +89,10 @@ jobs:
           command: ./dotnet-format-local/dotnet-format --check
   build-and-test:
     executor: docker-dotnet
-    parameters:
-      lincoln-nuget-username:
-        type: string
-        default: $LINCOLN_NUGET_USERNAME
-      lincoln-nuget-password:
-        type: string
-        default: $LINCOLN_PACKAGES_TOKEN
     steps:
       - checkout
       - setup_remote_docker
-      - run:
-          name: Add HACT package
-          command: dotnet nuget add source --username <<parameters.lincoln-nuget-username>> --password  <<parameters.lincoln-nuget-password>>  --store-password-in-clear-text --name github "https://nuget.pkg.github.com/City-of-Lincoln-Council/index.json"
+      - authenticate-nuget
       - run:
           name: build
           command: dotnet build HousingRepairsSchedulingApi
@@ -114,6 +102,7 @@ jobs:
   deploy-to-development:
     executor: docker-dotnet
     steps:
+      - authenticate-nuget
       - deploy-lambda:
           stage: "development"
   assume-role-development:
