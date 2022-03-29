@@ -29,7 +29,6 @@ functions:
     environment:
       AUTHENTICATION_IDENTIFIER: ${ssm:/HousingRepairsSchedulingApi/${self:provider.stage}/authentication-identifier}
       JWT_SECRET: ${ssm:/HousingRepairsSchedulingApi/${self:provider.stage}/jwt-secret}
-      UNIVERSAL_HOUSING_CONNECTION_STRING: ${ssm:/HousingRepairsSchedulingApi/${self:provider.stage}/universal-housing-connection-string}
     events:
       - http:
           path: /{proxy+}
