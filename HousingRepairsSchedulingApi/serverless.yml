@@ -27,8 +27,11 @@ functions:
     handler: HousingRepairsSchedulingApi::HousingRepairsSchedulingApi.LambdaEntryPoint::FunctionHandlerAsync
     role: lambdaExecutionRole
     environment:
-      AUTHENTICATION_IDENTIFIER: ${ssm:/HousingRepairsSchedulingApi/${self:provider.stage}/authentication-identifier}
-      JWT_SECRET: ${ssm:/HousingRepairsSchedulingApi/${self:provider.stage}/jwt-secret}
+      AUTHENTICATION_IDENTIFIER: ${ssm:/${self:service}/${self:provider.stage}/authentication-identifier}
+      JWT_SECRET: ${ssm:/${self:service}/${self:provider.stage}/jwt-secret}
+      DrsOptions__ApiAddress: ${ssm:/${self:service}/${self:provider.stage}/drs-api-address}
+      DrsOptions__Login: ${ssm:/${self:service}/${self:provider.stage}/drs-login}
+      DrsOptions__Password: ${ssm:/${self:service}/${self:provider.stage}/drs-password}
     events:
       - http:
           path: /{proxy+}
