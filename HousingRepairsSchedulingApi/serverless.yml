@@ -32,6 +32,7 @@ functions:
       DrsOptions__ApiAddress: ${ssm:/${self:service}/${self:provider.stage}/drs-api-address}
       DrsOptions__Login: ${ssm:/${self:service}/${self:provider.stage}/drs-login}
       DrsOptions__Password: ${ssm:/${self:service}/${self:provider.stage}/drs-password}
+      DrsOptions__SearchTimeSpanInDays: ${ssm:/${self:service}/${self:provider.stage}/drs-search-time-span-in-days}
     events:
       - http:
           path: /{proxy+}
