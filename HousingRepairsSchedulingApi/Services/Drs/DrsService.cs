@@ -10,7 +10,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
     public class DrsService : IDrsService
     {
-        private const string DrsContract = "0";
+        private const string DrsContract = "H01";
         private const string DummyPrimaryOrderNumber = "HousingRepairsOnlineDummyPrimaryOrderNumber";
         private const string DummyUserId = "HousingRepairsOnlineUserId";
         private const string Priority = "Priority 20 Days";
