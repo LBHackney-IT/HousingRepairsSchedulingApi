@@ -38,16 +38,16 @@ commands:
             - .aws
   authenticate-nuget:
     parameters:
-      lincoln-nuget-username:
+      hackney-nuget-username:
         type: string
-        default: $LINCOLN_NUGET_USERNAME
-      lincoln-nuget-password:
+        default: $HACKNEY_NUGET_USERNAME
+      hackney-nuget-password:
         type: string
-        default: $LINCOLN_PACKAGES_TOKEN
-    steps:
-      - run:
-          name: Add Nuget Source
-          command: dotnet nuget add source --username <<parameters.lincoln-nuget-username>> --password  <<parameters.lincoln-nuget-password>>  --store-password-in-clear-text --name github "https://nuget.pkg.github.com/City-of-Lincoln-Council/index.json"
+        default: $HACKNEY_PACKAGES_TOKEN
+      steps:
+        - run:
+            name: Add NuGet package source
+            command: dotnet nuget add source --username <<parameters.hackney-nuget-username>> --password  <<parameters.hackney-nuget-password>>  --store-password-in-clear-text --name github "https://nuget.pkg.github.com/LBHackney-IT/index.json"
   deploy-lambda:
     description: "Deploys API via Serverless"
     parameters:
