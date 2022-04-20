@@ -44,10 +44,10 @@ commands:
       hackney-nuget-password:
         type: string
         default: $HACKNEY_PACKAGES_TOKEN
-      steps:
-        - run:
-            name: Add NuGet package source
-            command: dotnet nuget add source --username <<parameters.hackney-nuget-username>> --password  <<parameters.hackney-nuget-password>>  --store-password-in-clear-text --name github "https://nuget.pkg.github.com/LBHackney-IT/index.json"
+    steps:
+      - run:
+          name: Add Nuget Source
+          command: dotnet nuget add source --username <<parameters.hackney-nuget-username>> --password  <<parameters.hackney-nuget-password>>  --store-password-in-clear-text --name github "https://nuget.pkg.github.com/LBHackney-IT/index.json"
   deploy-lambda:
     description: "Deploys API via Serverless"
     parameters:
