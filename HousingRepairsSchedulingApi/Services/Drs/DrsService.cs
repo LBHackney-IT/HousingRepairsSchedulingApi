@@ -12,7 +12,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
     {
         private const string DrsContract = "H01";
         private const string DummyPrimaryOrderNumber = "HousingRepairsOnlineDummyPrimaryOrderNumber";
-        private const string DummyUserId = "HousingRepairsOnlineUserId";
+        private const string DummyUserId = "HousingRepairsOnline";
         private const string Priority = "N";
 
         private readonly SOAP drsSoapClient;
