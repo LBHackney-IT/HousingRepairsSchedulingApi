@@ -116,10 +116,10 @@ custom:
         - subnet-05ce390ba88c42bfd
     staging:
       securityGroupIds:
-        - sg-011122be56aa0af9e
+        - sg-0fb44f2658c0a5d3b
       subnetIds:
-        - subnet-06d3de1bd9181b0d7
-        - subnet-0ed7d7713d1127656
+        - subnet-0743d86e9b362fa38
+        - subnet-0ea0020a44b98a2ca
     production:
       securityGroupIds:
         - sg-0ec487b8798809285
