@@ -5,9 +5,11 @@ namespace HousingRepairsSchedulingApi.Controllers
     using Microsoft.AspNetCore.Mvc;
     using Sentry;
     using UseCases;
+    using Constants = HousingRepairsSchedulingApi.Constants;
 
     [ApiController]
-    [Route("[controller]")]
+    [Route($"{Constants.ApiV1RoutePrefix}[controller]")]
+    [ApiVersion("1.0")]
     public class AppointmentsController : ControllerBase
     {
         private readonly IRetrieveAvailableAppointmentsUseCase retrieveAvailableAppointmentsUseCase;
