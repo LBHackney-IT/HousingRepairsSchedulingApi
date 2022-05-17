@@ -34,6 +34,8 @@ functions:
       DrsOptions__Login: ${ssm:/${self:service}/${self:provider.stage}/drs-login}
       DrsOptions__Password: ${ssm:/${self:service}/${self:provider.stage}/drs-password}
       DrsOptions__SearchTimeSpanInDays: ${ssm:/${self:service}/${self:provider.stage}/drs-search-time-span-in-days}
+      SENTRY_DSN: ${ssm:/${self:service}/${self:provider.stage}/sentry-dsn}
+      SENTRY_ENVIRONMENT: ${self:provider.stage}
     events:
       - http:
           path: /{proxy+}

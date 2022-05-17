@@ -30,7 +30,8 @@
         "DrsOptions__ApiAddress" : "<REPLACE WITH API ADDRESS>",
         "DrsOptions__Login" : "<REPLACE WITH DRS LOGIN>",
         "DrsOptions__Password" : "<REPLACE WITH DRS PASSWORD>",
-        "SENTRY_DSN": "https://<REPLACE WITH SENTRY DSN>"
+        "SENTRY_DSN": "https://<REPLACE WITH SENTRY DSN>",
+        "SENTRY_ENVIRONMENT": "<REPLACE WITH AN ENVIRONMENT IDENTIFIER [Optional]>"
       }
     }
   }
