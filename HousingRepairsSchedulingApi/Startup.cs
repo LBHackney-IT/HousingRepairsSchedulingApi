@@ -1,29 +1,25 @@
-using System;
-using HousingRepairsOnline.Authentication.DependencyInjection;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
-
 namespace HousingRepairsSchedulingApi
 {
+    using System;
+    using HousingRepairsOnline.Authentication.DependencyInjection;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.OpenApi.Models;
     using System.ServiceModel;
-    using Gateways;
+    using HousingRepairsSchedulingApi.Gateways;
     using Microsoft.Extensions.Options;
-    using Services.Drs;
-    using UseCases;
+    using HousingRepairsSchedulingApi.Services.Drs;
+    using HousingRepairsSchedulingApi.UseCases;
 
     public class Startup
     {
         private const string HousingRepairsSchedulingApiIssuerId = "Housing Management System Api";
         private const string DrsOptionsApiAddressConfigurationKey = nameof(DrsOptions.ApiAddress);
 
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+        public Startup(IConfiguration configuration) => this.Configuration = configuration;
 
         public IConfiguration Configuration { get; }
 

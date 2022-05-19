@@ -1,6 +1,7 @@
-namespace HousingRepairsSchedulingApi;
-
-public static class Constants
+namespace HousingRepairsSchedulingApi
 {
-    public const string ApiV1RoutePrefix = "api/v1/repairsonline/";
+    public static class Constants
+    {
+        public const string ApiV1RoutePrefix = "api/v1/repairsonline/";
+    }
 }

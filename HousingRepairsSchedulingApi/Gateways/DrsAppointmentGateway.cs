@@ -38,14 +38,14 @@ namespace HousingRepairsSchedulingApi.Gateways
             Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
             Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
 
-            var earliestDate = fromDate ?? DateTime.Today.AddDays(appointmentLeadTimeInDays);
+            var earliestDate = fromDate ?? DateTime.Today.AddDays(this.appointmentLeadTimeInDays);
             var appointmentSlots = Enumerable.Empty<AppointmentSlot>();
 
             var numberOfRequests = 0;
-            while (numberOfRequests < maximumNumberOfRequests && appointmentSlots.Select(x => x.StartTime.Date).Distinct().Count() < requiredNumberOfAppointmentDays)
+            while (numberOfRequests < this.maximumNumberOfRequests && appointmentSlots.Select(x => x.StartTime.Date).Distinct().Count() < this.requiredNumberOfAppointmentDays)
             {
                 numberOfRequests++;
-                var appointments = await drsService.CheckAvailability(sorCode, locationId, earliestDate);
+                var appointments = await this.drsService.CheckAvailability(sorCode, locationId, earliestDate);
                 appointments = appointments.Where(x =>
                     !(x.StartTime.Hour == 9 && x.EndTime.Minute == 30
                       && x.EndTime.Hour == 14 && x.EndTime.Minute == 30) &&
@@ -57,16 +57,16 @@ namespace HousingRepairsSchedulingApi.Gateways
                                             && x.EndTime.Hour == 15 && x.EndTime.Minute == 0)
                 );
                 appointmentSlots = appointmentSlots.Concat(appointments);
-                earliestDate = earliestDate.AddDays(appointmentSearchTimeSpanInDays);
+                earliestDate = earliestDate.AddDays(this.appointmentSearchTimeSpanInDays);
             }
 
-            appointmentSlots = appointmentSlots.GroupBy(x => x.StartTime.Date).Take(requiredNumberOfAppointmentDays)
+            appointmentSlots = appointmentSlots.GroupBy(x => x.StartTime.Date).Take(this.requiredNumberOfAppointmentDays)
                 .SelectMany(x => x.Select(y => y));
 
             return appointmentSlots;
         }
 
-        public async Task<string> BookAppointment(string bookingReference, string sorCode, string locationId,
+        public async Task<SchedulingApiBookingResponse> BookAppointment(string bookingReference, string sorCode, string locationId,
             DateTime startDateTime, DateTime endDateTime)
         {
             Guard.Against.NullOrWhiteSpace(bookingReference, nameof(bookingReference));
@@ -74,11 +74,15 @@ namespace HousingRepairsSchedulingApi.Gateways
             Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
             Guard.Against.OutOfRange(endDateTime, nameof(endDateTime), startDateTime, DateTime.MaxValue);
 
-            var bookingId = await drsService.CreateOrder(bookingReference, sorCode, locationId);
+            var booking = await this.drsService.CreateOrder(bookingReference, sorCode, locationId);
 
-            await drsService.ScheduleBooking(bookingReference, bookingId, startDateTime, endDateTime);
+            await this.drsService.ScheduleBooking(bookingReference, booking.bookingId, startDateTime, endDateTime);
 
-            return bookingReference;
+            return new SchedulingApiBookingResponse
+            {
+                BookingReference = bookingReference,
+                TokenId = booking.tokenId
+            };
         }
     }
 }

@@ -5,7 +5,7 @@ namespace HousingRepairsSchedulingApi.Controllers
     using Microsoft.AspNetCore.Mvc;
     using Sentry;
     using UseCases;
-    using Constants = HousingRepairsSchedulingApi.Constants;
+    using Constants = Constants;
 
     [ApiController]
     [Route($"{Constants.ApiV1RoutePrefix}[controller]")]
@@ -28,13 +28,13 @@ namespace HousingRepairsSchedulingApi.Controllers
         {
             try
             {
-                var result = await retrieveAvailableAppointmentsUseCase.Execute(sorCode, locationId, fromDate);
+                var result = await this.retrieveAvailableAppointmentsUseCase.Execute(sorCode, locationId, fromDate);
                 return this.Ok(result);
             }
             catch (Exception ex)
             {
                 SentrySdk.CaptureException(ex);
-                return StatusCode(500, ex.Message);
+                return this.StatusCode(500, ex.Message);
             }
         }
 
@@ -48,14 +48,14 @@ namespace HousingRepairsSchedulingApi.Controllers
         {
             try
             {
-                var result = await bookAppointmentUseCase.Execute(bookingReference, sorCode, locationId, startDateTime, endDateTime);
+                var result = await this.bookAppointmentUseCase.Execute(bookingReference, sorCode, locationId, startDateTime, endDateTime);
 
                 return this.Ok(result);
             }
             catch (Exception ex)
             {
                 SentrySdk.CaptureException(ex);
-                return StatusCode(500, ex.Message);
+                return this.StatusCode(500, ex.Message);
             }
         }
     }

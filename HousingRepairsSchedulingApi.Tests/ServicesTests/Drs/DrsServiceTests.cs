@@ -21,9 +21,9 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
         private const string BookingReference = "BookingReference";
         private const int BookingId = 12345;
 
-        private Mock<SOAP> soapMock;
+        private readonly Mock<SOAP> soapMock;
 
-        private DrsService systemUnderTest;
+        private readonly DrsService systemUnderTest;
 
         public DrsServiceTests()
         {
@@ -31,14 +31,14 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
             drsOptionsMock.Setup(x => x.Value)
                 .Returns(new DrsOptions { Login = "login", Password = "password" });
 
-            soapMock = new Mock<SOAP>();
-            soapMock.Setup(x => x.openSessionAsync(It.IsAny<openSession>()))
+            this.soapMock = new Mock<SOAP>();
+            this.soapMock.Setup(x => x.openSessionAsync(It.IsAny<openSession>()))
                 .ReturnsAsync(new openSessionResponse
                 {
                     @return = new xmbOpenSessionResponse { sessionId = "sessionId" }
                 });
 
-            systemUnderTest = new DrsService(soapMock.Object, drsOptionsMock.Object);
+            this.systemUnderTest = new DrsService(this.soapMock.Object, drsOptionsMock.Object);
 
         }
 
@@ -73,12 +73,12 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
         {
             // Arrange
 
-            soapMock.Setup(x => x.checkAvailabilityAsync(It.IsAny<checkAvailability>()))
+            this.soapMock.Setup(x => x.checkAvailabilityAsync(It.IsAny<checkAvailability>()))
                 .ReturnsAsync(new checkAvailabilityResponse(
                     new xmbCheckAvailabilityResponse { theSlots = daySlots }));
 
             // Act
-            var appointmentSlots = await systemUnderTest.CheckAvailability(SorCode, LocationId, searchDate);
+            var appointmentSlots = await this.systemUnderTest.CheckAvailability(SorCode, LocationId, searchDate);
 
             // Assert
             appointmentSlots.Should().BeEquivalentTo(expected);
@@ -168,12 +168,12 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
             // Arrange
             var dateTime = new DateTime(2022, 1, 19);
 
-            soapMock.Setup(x => x.checkAvailabilityAsync(It.IsAny<checkAvailability>()))
+            this.soapMock.Setup(x => x.checkAvailabilityAsync(It.IsAny<checkAvailability>()))
                 .ReturnsAsync(new checkAvailabilityResponse(
                     new xmbCheckAvailabilityResponse { theSlots = new[] { new daySlotsInfo { day = dateTime } } }));
 
             // Act
-            var appointmentSlots = await systemUnderTest.CheckAvailability(SorCode, LocationId, dateTime);
+            var appointmentSlots = await this.systemUnderTest.CheckAvailability(SorCode, LocationId, dateTime);
             Func<IEnumerable<AppointmentSlot>> act = () => appointmentSlots.ToArray();
 
             // Assert
@@ -191,7 +191,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
             // Arrange
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.CreateOrder(bookingReference, It.IsAny<string>(), It.IsAny<string>());
+            Func<Task> act = async () => await this.systemUnderTest.CreateOrder(bookingReference, It.IsAny<string>(), It.IsAny<string>());
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -209,7 +209,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
             // Arrange
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.CreateOrder(BookingReference, sorCode, It.IsAny<string>());
+            Func<Task> act = async () => await this.systemUnderTest.CreateOrder(BookingReference, sorCode, It.IsAny<string>());
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -227,7 +227,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
             // Arrange
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.CreateOrder(BookingReference, SorCode, locationId);
+            Func<Task> act = async () => await this.systemUnderTest.CreateOrder(BookingReference, SorCode, locationId);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -246,11 +246,36 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
                 }));
 
             // Act
-            var actual = await systemUnderTest.CreateOrder(BookingReference, SorCode, LocationId);
+            var actual = await this.systemUnderTest.CreateOrder(BookingReference, SorCode, LocationId);
 
             // Assert
-            Assert.Equal(BookingId, actual);
+            Assert.Equal(BookingId, actual.bookingId);
 
+        }
+
+        [Fact]
+        public async void GivenValidCreateOrderResponse_WhenCreatingAnOrder_ThenDrsIdIsPresentInTheResponse()
+        {
+            // Arrange
+            var expectedGuid = Guid.NewGuid().ToString();
+
+            this.soapMock.Setup(x => x.createOrderAsync(It.IsAny<createOrder>()))
+                .ReturnsAsync(new createOrderResponse(new xmbCreateOrderResponse
+                {
+                    theOrder = new order
+                    {
+                        theBookings = new[] { new booking {
+                        bookingId = BookingId,
+                        tokenId = expectedGuid
+                    } }
+                    }
+                }));
+
+            // Act
+            var actual = await this.systemUnderTest.CreateOrder(BookingReference, SorCode, LocationId);
+
+            // Assert
+            Assert.Equal(expectedGuid, actual.tokenId);
         }
 
 
@@ -265,7 +290,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
             // Arrange
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.ScheduleBooking(bookingReference, It.IsAny<int>(),
+            Func<Task> act = async () => await this.systemUnderTest.ScheduleBooking(bookingReference, It.IsAny<int>(),
                 It.IsAny<DateTime>(), It.IsAny<DateTime>());
 
             // Assert
@@ -283,7 +308,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
 
             // Act
             Func<Task> act = async () =>
-                await systemUnderTest.ScheduleBooking(BookingReference, BookingId, startDate, endDate);
+                await this.systemUnderTest.ScheduleBooking(BookingReference, BookingId, startDate, endDate);
 
             // Assert
             await act.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>();
@@ -296,15 +321,15 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
         {
             // Arrange
             Expression<Action<SOAP>> schedulingBookingExpression = x => x.scheduleBookingAsync(It.IsAny<scheduleBooking>());
-            soapMock.Setup(schedulingBookingExpression);
+            this.soapMock.Setup(schedulingBookingExpression);
             var startDate = new DateTime(2022, 1, 21);
             var endDate = startDate.AddDays(1);
 
             // Act
-            await systemUnderTest.ScheduleBooking(BookingReference, BookingId, startDate, endDate);
+            await this.systemUnderTest.ScheduleBooking(BookingReference, BookingId, startDate, endDate);
 
             // Assert
-            soapMock.Verify(schedulingBookingExpression);
+            this.soapMock.Verify(schedulingBookingExpression);
         }
 
         public static IEnumerable<object[]> InvalidArgumentTestData()

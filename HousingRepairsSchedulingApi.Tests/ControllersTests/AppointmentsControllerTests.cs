@@ -1,29 +1,28 @@
-using System.Threading.Tasks;
-using FluentAssertions;
-using Moq;
-using Xunit;
-
 namespace HousingRepairsSchedulingApi.Tests.ControllersTests
 {
+    using System.Threading.Tasks;
+    using FluentAssertions;
+    using Moq;
+    using Xunit;
     using System;
-    using Controllers;
-    using UseCases;
+    using HousingRepairsSchedulingApi.Controllers;
+    using HousingRepairsSchedulingApi.UseCases;
 
     public class AppointmentsControllerTests : ControllerTests
     {
         private const string SorCode = "SOR Code";
         private const string LocationId = "locationId";
-        private AppointmentsController systemUndertest;
-        private Mock<IRetrieveAvailableAppointmentsUseCase> availableAppointmentsUseCaseMock;
-        private Mock<IBookAppointmentUseCase> bookAppointmentUseCaseMock;
+        private readonly AppointmentsController systemUndertest;
+        private readonly Mock<IRetrieveAvailableAppointmentsUseCase> availableAppointmentsUseCaseMock;
+        private readonly Mock<IBookAppointmentUseCase> bookAppointmentUseCaseMock;
 
         public AppointmentsControllerTests()
         {
-            availableAppointmentsUseCaseMock = new Mock<IRetrieveAvailableAppointmentsUseCase>();
-            bookAppointmentUseCaseMock = new Mock<IBookAppointmentUseCase>();
+            this.availableAppointmentsUseCaseMock = new Mock<IRetrieveAvailableAppointmentsUseCase>();
+            this.bookAppointmentUseCaseMock = new Mock<IBookAppointmentUseCase>();
             this.systemUndertest = new AppointmentsController(
-                availableAppointmentsUseCaseMock.Object,
-                bookAppointmentUseCaseMock.Object);
+                this.availableAppointmentsUseCaseMock.Object,
+                this.bookAppointmentUseCaseMock.Object);
         }
 
         [Fact]
@@ -31,7 +30,7 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
         {
             var result = await this.systemUndertest.AvailableAppointments(SorCode, LocationId);
             GetStatusCode(result).Should().Be(200);
-            availableAppointmentsUseCaseMock.Verify(x => x.Execute(SorCode, LocationId, null), Times.Once);
+            this.availableAppointmentsUseCaseMock.Verify(x => x.Execute(SorCode, LocationId, null), Times.Once);
         }
 
 
@@ -40,7 +39,7 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
         {
 
             const string errorMessage = "An error message";
-            this.availableAppointmentsUseCaseMock.Setup(x => x.Execute(It.IsAny<String>(), It.IsAny<String>(), null)).Throws(new Exception(errorMessage));
+            this.availableAppointmentsUseCaseMock.Setup(x => x.Execute(It.IsAny<string>(), It.IsAny<string>(), null)).Throws(new Exception(errorMessage));
 
             var result = await this.systemUndertest.AvailableAppointments(SorCode, LocationId);
 
@@ -74,7 +73,7 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
 
             // Assert
             GetStatusCode(result).Should().Be(200);
-            availableAppointmentsUseCaseMock.Verify(x => x.Execute(sorCode, locationId, fromDate), Times.Once);
+            this.availableAppointmentsUseCaseMock.Verify(x => x.Execute(sorCode, locationId, fromDate), Times.Once);
         }
 
         [Fact]
@@ -85,7 +84,7 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
             var endDateTime = It.IsAny<DateTime>();
 
             const string errorMessage = "An error message";
-            this.bookAppointmentUseCaseMock.Setup(x => x.Execute(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>(), It.IsAny<DateTime>(), It.IsAny<DateTime>())).Throws(new Exception(errorMessage));
+            this.bookAppointmentUseCaseMock.Setup(x => x.Execute(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<DateTime>())).Throws(new Exception(errorMessage));
 
             var result = await this.systemUndertest.BookAppointment(bookingReference, SorCode, LocationId, startDateTime, endDateTime);
 

@@ -31,14 +31,14 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
         public async Task<IEnumerable<AppointmentSlot>> CheckAvailability(string sorCode, string locationId, DateTime earliestDate)
         {
-            await EnsureSessionOpened();
+            await this.EnsureSessionOpened();
 
             var checkAvailability = new xmbCheckAvailability
             {
                 sessionId = this.sessionId,
                 periodBegin = earliestDate,
                 periodBeginSpecified = true,
-                periodEnd = earliestDate.AddDays(drsOptions.Value.SearchTimeSpanInDays - 1),
+                periodEnd = earliestDate.AddDays(this.drsOptions.Value.SearchTimeSpanInDays - 1),
                 periodEndSpecified = true,
                 theOrder = new order
                 {
@@ -75,13 +75,13 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             return appointmentSlots;
         }
 
-        public async Task<int> CreateOrder(string bookingReference, string sorCode, string locationId)
+        public async Task<booking> CreateOrder(string bookingReference, string sorCode, string locationId)
         {
             Guard.Against.NullOrWhiteSpace(bookingReference, nameof(bookingReference));
             Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
             Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
 
-            await EnsureSessionOpened();
+            await this.EnsureSessionOpened();
 
             var createOrder = new xmbCreateOrder
             {
@@ -108,8 +108,9 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                 }
             };
 
-            var createOrderResponse = await drsSoapClient.createOrderAsync(new createOrder(createOrder));
-            var result = createOrderResponse.@return.theOrder.theBookings[0].bookingId;
+            var createOrderResponse = await this.drsSoapClient.createOrderAsync(new createOrder(createOrder));
+            var result = createOrderResponse.@return.theOrder.theBookings[0];
+            ;
 
             return result;
         }
@@ -119,7 +120,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             Guard.Against.NullOrWhiteSpace(bookingReference, nameof(bookingReference));
             Guard.Against.OutOfRange(endDateTime, nameof(endDateTime), startDateTime, DateTime.MaxValue);
 
-            await EnsureSessionOpened();
+            await this.EnsureSessionOpened();
 
             var scheduleBooking = new xmbScheduleBooking
             {
@@ -141,19 +142,19 @@ namespace HousingRepairsSchedulingApi.Services.Drs
         {
             var xmbOpenSession = new xmbOpenSession
             {
-                login = drsOptions.Value.Login,
-                password = drsOptions.Value.Password
+                login = this.drsOptions.Value.Login,
+                password = this.drsOptions.Value.Password
             };
             var response = await this.drsSoapClient.openSessionAsync(new openSession(xmbOpenSession));
 
-            sessionId = response.@return.sessionId;
+            this.sessionId = response.@return.sessionId;
         }
 
         private async Task EnsureSessionOpened()
         {
             if (this.sessionId == null)
             {
-                await OpenSession();
+                await this.OpenSession();
             }
         }
     }
