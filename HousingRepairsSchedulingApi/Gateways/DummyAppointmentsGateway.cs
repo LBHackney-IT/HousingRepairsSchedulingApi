@@ -8,7 +8,7 @@ namespace HousingRepairsSchedulingApi.Gateways
 
     public class DummyAppointmentsGateway : IAppointmentsGateway
     {
-        public Task<IEnumerable<AppointmentSlot>> GetAvailableAppointments(string sorCode, string locationId, DateTime? fromDate = null)
+        public async Task<IEnumerable<AppointmentSlot>> GetAvailableAppointments(string sorCode, string locationId, DateTime? fromDate = null)
         {
             var dateTime = (fromDate ?? DateTime.Today).Date;
             var unorderedAppointments = new List<AppointmentSlot>
@@ -40,7 +40,7 @@ namespace HousingRepairsSchedulingApi.Gateways
                 }
             };
             var orderedAppointments = unorderedAppointments.OrderBy(x => x.StartTime);
-            return Task.FromResult(orderedAppointments);
+            return orderedAppointments;
         }
 
         public Task<SchedulingApiBookingResponse> BookAppointment(string bookingReference, string sorCode, string locationId, DateTime startDateTime,
