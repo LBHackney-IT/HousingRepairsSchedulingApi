@@ -1,12 +1,12 @@
 namespace HousingRepairsSchedulingApi.Tests.ControllersTests
 {
+    using System;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using Moq;
-    using Xunit;
-    using System;
     using HousingRepairsSchedulingApi.Controllers;
     using HousingRepairsSchedulingApi.UseCases;
+    using Moq;
+    using Xunit;
 
     public class AppointmentsControllerTests : ControllerTests
     {

@@ -1,18 +1,18 @@
 namespace HousingRepairsSchedulingApi
 {
     using System;
+    using System.ServiceModel;
     using HousingRepairsOnline.Authentication.DependencyInjection;
+    using HousingRepairsSchedulingApi.Gateways;
+    using HousingRepairsSchedulingApi.Services.Drs;
+    using HousingRepairsSchedulingApi.UseCases;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
-    using Microsoft.OpenApi.Models;
-    using System.ServiceModel;
-    using HousingRepairsSchedulingApi.Gateways;
     using Microsoft.Extensions.Options;
-    using HousingRepairsSchedulingApi.Services.Drs;
-    using HousingRepairsSchedulingApi.UseCases;
+    using Microsoft.OpenApi.Models;
 
     public class Startup
     {
