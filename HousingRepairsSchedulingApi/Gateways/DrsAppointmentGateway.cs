@@ -6,6 +6,7 @@ namespace HousingRepairsSchedulingApi.Gateways
     using System.Threading.Tasks;
     using Ardalis.GuardClauses;
     using Domain;
+    using Helpers;
     using Services.Drs;
 
     public class DrsAppointmentGateway : IAppointmentsGateway
@@ -75,8 +76,10 @@ namespace HousingRepairsSchedulingApi.Gateways
             Guard.Against.OutOfRange(endDateTime, nameof(endDateTime), startDateTime, DateTime.MaxValue);
 
             var bookingId = await drsService.CreateOrder(bookingReference, sorCode, locationId);
+            var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(startDateTime);
+            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(endDateTime);
 
-            await drsService.ScheduleBooking(bookingReference, bookingId, startDateTime, endDateTime);
+            await drsService.ScheduleBooking(bookingReference, bookingId, convertedStartTime, convertedEndTime);
 
             return bookingReference;
         }

@@ -619,7 +619,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             ).ReturnsAsync(bookingId);
 
             // Act
-            var startDateTime = It.IsAny<DateTime>();
+            var startDateTime = new DateTime(2022, 05, 01);
             var actual = await systemUnderTest.BookAppointment(BookingReference, SorCode, LocationId,
                 startDateTime, startDateTime.AddDays(1));
 

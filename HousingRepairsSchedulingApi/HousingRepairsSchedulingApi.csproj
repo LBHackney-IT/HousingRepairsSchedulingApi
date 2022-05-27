@@ -12,6 +12,7 @@
     <PackageReference Include="Hackney.HACT.Dtos" Version="1.1.1" />
     <PackageReference Include="Hackney.HousingRepairsOnline.Authentication" Version="1.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.0.0" />
+    <PackageReference Include="NodaTime" Version="3.1.0" />
     <PackageReference Include="RichardSzalay.MockHttp" Version="6.0.0" />
     <PackageReference Include="Sentry.AspNetCore" Version="3.13.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
