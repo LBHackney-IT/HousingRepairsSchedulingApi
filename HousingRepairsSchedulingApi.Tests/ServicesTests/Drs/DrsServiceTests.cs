@@ -310,6 +310,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
             // Assert
             soapMock.Verify(schedulingBookingExpression);
             Assert.True(request.scheduleBooking1.theBooking.assignedStartSpecified);
+            Assert.True(request.scheduleBooking1.theBooking.assignedEndSpecified);
 
         }
 
