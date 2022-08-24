@@ -295,8 +295,12 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
 #pragma warning restore CA1707
         {
             // Arrange
+            scheduleBooking request = null;
+
             Expression<Action<SOAP>> schedulingBookingExpression = x => x.scheduleBookingAsync(It.IsAny<scheduleBooking>());
-            soapMock.Setup(schedulingBookingExpression);
+            soapMock.Setup(schedulingBookingExpression)
+                .Callback<scheduleBooking>(r => request = r);
+
             var startDate = new DateTime(2022, 1, 21);
             var endDate = startDate.AddDays(1);
 
@@ -305,6 +309,9 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
 
             // Assert
             soapMock.Verify(schedulingBookingExpression);
+            Assert.True(request.scheduleBooking1.theBooking.assignedStartSpecified);
+            Assert.True(request.scheduleBooking1.theBooking.assignedEndSpecified);
+
         }
 
         public static IEnumerable<object[]> InvalidArgumentTestData()

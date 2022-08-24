@@ -131,6 +131,10 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                     primaryOrderNumber = bookingReference,
                     planningWindowStart = startDateTime,
                     planningWindowEnd = endDateTime,
+                    assignedStart = startDateTime,
+                    assignedEnd = endDateTime,
+                    assignedStartSpecified = true,
+                    assignedEndSpecified = true
                 }
             };
 
