@@ -54,7 +54,7 @@ namespace HousingRepairsSchedulingApi.Controllers
             {
                 var result = await _bookAppointmentUseCase.Execute(request);
 
-                return this.Ok(result);
+                return Ok(result);
             }
             catch (Exception ex)
             {

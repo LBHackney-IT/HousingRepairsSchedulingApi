@@ -66,15 +66,12 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
                 var appointmentSlots = checkAvailabilityResponse.@return.theSlots
                     .Where(x => x.slotsForDay != null)
-                    .SelectMany(x =>
-                        x.slotsForDay.Where(y => y.available == availableValue.YES).Select(y =>
-                            new AppointmentSlot
-                            {
-                                StartTime = y.beginDate,
-                                EndTime = y.endDate,
-                            }
-                        )
+                    .SelectMany(x => x.slotsForDay
+                        .Where(y => y.available == availableValue.YES)
+                        .Select(y => new AppointmentSlot { StartTime = y.beginDate, EndTime = y.endDate })
                 );
+
+                LambdaLogger.Log($"Call to CheckAvailability was successful for location {locationId}");
 
                 return appointmentSlots;
             }
@@ -124,6 +121,8 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                 var createOrderResponse = await _drsSoapClient.createOrderAsync(new createOrder(createOrder));
                 var result = createOrderResponse.@return.theOrder.theBookings[0].bookingId;
 
+                LambdaLogger.Log($"Call to CheckAvailability was successful for location {locationId} with bookingId {result}");
+
                 return result;
             }
             catch (Exception e)
@@ -161,6 +160,8 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             try
             {
                 _ = await _drsSoapClient.scheduleBookingAsync(new scheduleBooking(scheduleBooking));
+
+                LambdaLogger.Log($"Call to ScheduleBooking was successful for bookingId {bookingId}");
             }
             catch (Exception e)
             {
