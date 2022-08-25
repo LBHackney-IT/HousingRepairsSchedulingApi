@@ -34,7 +34,8 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
         public async Task TestAvailableAppointmentsEndpoint()
         {
             // Arrange
-            var request = new GetAvailableAppointmentsRequest {
+            var request = new GetAvailableAppointmentsRequest
+            {
                 SorCode = SorCode,
                 LocationId = LocationId
             };

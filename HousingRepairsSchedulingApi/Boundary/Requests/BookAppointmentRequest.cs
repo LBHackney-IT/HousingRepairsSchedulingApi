@@ -1,4 +1,4 @@
-﻿namespace HousingRepairsSchedulingApi.Boundary.Requests
+namespace HousingRepairsSchedulingApi.Boundary.Requests
 {
     using System;
     using Microsoft.AspNetCore.Mvc;

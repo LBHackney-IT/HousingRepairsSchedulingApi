@@ -28,7 +28,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-        public async void GivenAnInvalidBookingReference_WhenExecute_ThenExceptionIsThrown<T>(T exception, string bookingReference) where T : Exception
+        public async void GivenAnInvalidBookingReference_WhenExecute_ThenExceptionIsThrown<T>(string bookingReference) where T : Exception
         {
             // Arrange
             var request = new BookAppointmentRequest
@@ -49,7 +49,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-        public async void GivenAnInvalidSorCode_WhenExecute_ThenExceptionIsThrown<T>(T exception, string sorCode) where T : Exception
+        public async void GivenAnInvalidSorCode_WhenExecute_ThenExceptionIsThrown<T>(string sorCode) where T : Exception
         {
             // Arrange
             var request = new BookAppointmentRequest
@@ -70,7 +70,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-        public async void GivenAnInvalidLocationId_WhenExecute_ThenExceptionIsThrown<T>(T exception, string locationId) where T : Exception
+        public async void GivenAnInvalidLocationId_WhenExecute_ThenExceptionIsThrown<T>(string locationId) where T : Exception
         {
             // Arrange
             var request = new BookAppointmentRequest
