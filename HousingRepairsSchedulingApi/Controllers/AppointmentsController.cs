@@ -42,7 +42,7 @@ namespace HousingRepairsSchedulingApi.Controllers
             {
                 SentrySdk.CaptureException(ex);
 
-                LambdaLogger.Log("An error was thrown when calling retrieveAvailableAppointmentsUseCase: " + JsonSerializer.Serialize(ex));
+                LambdaLogger.Log("An error was thrown when calling retrieveAvailableAppointmentsUseCase: " + JsonSerializer.Serialize(ex.Message));
 
                 return StatusCode(500);
             }
@@ -67,7 +67,7 @@ namespace HousingRepairsSchedulingApi.Controllers
             {
                 SentrySdk.CaptureException(ex);
 
-                LambdaLogger.Log("An error was thrown when calling bookAppointmentUseCase: " + JsonSerializer.Serialize(ex));
+                LambdaLogger.Log("An error was thrown when calling bookAppointmentUseCase: " + JsonSerializer.Serialize(ex.Message));
 
                 return StatusCode(500);
             }
