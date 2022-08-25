@@ -7,6 +7,7 @@ namespace HousingRepairsSchedulingApi.UseCases
     using Ardalis.GuardClauses;
     using Domain;
     using HACT.Dtos;
+    using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using HousingRepairsSchedulingApi.UseCases.Interfaces;
 
@@ -19,12 +20,12 @@ namespace HousingRepairsSchedulingApi.UseCases
             _appointmentsGateway = appointmentsGateway;
         }
 
-        public async Task<IEnumerable<Appointment>> Execute(string sorCode, string locationId, DateTime? fromDate = null)
+        public async Task<IEnumerable<Appointment>> Execute(GetAvailableAppointmentsRequest request)
         {
-            Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
-            Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
+            Guard.Against.NullOrWhiteSpace(request.SorCode, nameof(request.SorCode));
+            Guard.Against.NullOrWhiteSpace(request.LocationId, nameof(request.LocationId));
 
-            var availableAppointments = await _appointmentsGateway.GetAvailableAppointments(sorCode, locationId, fromDate);
+            var availableAppointments = await _appointmentsGateway.GetAvailableAppointments(request);
 
             return availableAppointments.Select(x => x.ToHactAppointment());
         }

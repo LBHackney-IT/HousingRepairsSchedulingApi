@@ -7,6 +7,7 @@ namespace HousingRepairsSchedulingApi.Gateways
     using Ardalis.GuardClauses;
     using Domain;
     using Helpers;
+    using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using Services.Drs;
 
@@ -38,15 +39,12 @@ namespace HousingRepairsSchedulingApi.Gateways
             _maximumNumberOfRequests = maximumNumberOfRequests;
         }
 
-        public async Task<IEnumerable<AppointmentSlot>> GetAvailableAppointments(
-            string sorCode,
-            string locationId,
-            DateTime? fromDate = null)
+        public async Task<IEnumerable<AppointmentSlot>> GetAvailableAppointments(GetAvailableAppointmentsRequest request)
         {
-            Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
-            Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
+            Guard.Against.NullOrWhiteSpace(request.SorCode, nameof(request.SorCode));
+            Guard.Against.NullOrWhiteSpace(request.LocationId, nameof(request.LocationId));
 
-            var earliestDate = fromDate ?? DateTime.Today.AddDays(_appointmentLeadTimeInDays);
+            var earliestDate = request.FromDate ?? DateTime.Today.AddDays(_appointmentLeadTimeInDays);
             var appointmentSlots = Enumerable.Empty<AppointmentSlot>();
 
             var numberOfRequests = 0;
@@ -54,7 +52,7 @@ namespace HousingRepairsSchedulingApi.Gateways
             while (numberOfRequests < _maximumNumberOfRequests && appointmentSlots.Select(x => x.StartTime.Date).Distinct().Count() < _requiredNumberOfAppointmentDays)
             {
                 numberOfRequests++;
-                var appointments = await GetValidAppointments(sorCode, locationId, earliestDate);
+                var appointments = await GetValidAppointments(request.SorCode, request.LocationId, earliestDate);
 
                 appointmentSlots = appointmentSlots.Concat(appointments);
                 earliestDate = earliestDate.AddDays(_appointmentSearchTimeSpanInDays);
@@ -85,26 +83,21 @@ namespace HousingRepairsSchedulingApi.Gateways
             return appointments;
         }
 
-        public async Task<string> BookAppointment(
-            string bookingReference,
-            string sorCode,
-            string locationId,
-            DateTime startDateTime,
-            DateTime endDateTime)
+        public async Task<string> BookAppointment(BookAppointmentRequest request)
         {
-            Guard.Against.NullOrWhiteSpace(bookingReference, nameof(bookingReference));
-            Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
-            Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
-            Guard.Against.OutOfRange(endDateTime, nameof(endDateTime), startDateTime, DateTime.MaxValue);
+            Guard.Against.NullOrWhiteSpace(request.BookingReference, nameof(request.BookingReference));
+            Guard.Against.NullOrWhiteSpace(request.SorCode, nameof(request.SorCode));
+            Guard.Against.NullOrWhiteSpace(request.LocationId, nameof(request.LocationId));
+            Guard.Against.OutOfRange(request.EndDateTime, nameof(request.EndDateTime), request.StartDateTime, DateTime.MaxValue);
 
-            var bookingId = await _drsService.CreateOrder(bookingReference, sorCode, locationId);
+            var bookingId = await _drsService.CreateOrder(request.BookingReference, request.SorCode, request.LocationId);
 
-            var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(startDateTime);
-            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(endDateTime);
+            var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(request.StartDateTime);
+            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(request.EndDateTime);
 
-            await _drsService.ScheduleBooking(bookingReference, bookingId, convertedStartTime, convertedEndTime);
+            await _drsService.ScheduleBooking(request.BookingReference, bookingId, convertedStartTime, convertedEndTime);
 
-            return bookingReference;
+            return request.BookingReference;
         }
     }
 }

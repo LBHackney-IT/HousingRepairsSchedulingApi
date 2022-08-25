@@ -5,6 +5,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
     using System.Threading.Tasks;
     using FluentAssertions;
     using Gateways;
+    using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using Moq;
     using UseCases;
@@ -16,13 +17,13 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
         private const string SorCode = "SOR Code";
         private const string LocationId = "locationId";
 
-        private BookAppointmentUseCase systemUnderTest;
-        private Mock<IAppointmentsGateway> appointmentsGatewayMock;
+        private BookAppointmentUseCase _systemUnderTest;
+        private Mock<IAppointmentsGateway> _appointmentsGatewayMock;
 
         public BookAppointmentUseCaseTests()
         {
-            appointmentsGatewayMock = new Mock<IAppointmentsGateway>();
-            systemUnderTest = new BookAppointmentUseCase(appointmentsGatewayMock.Object);
+            _appointmentsGatewayMock = new Mock<IAppointmentsGateway>();
+            _systemUnderTest = new BookAppointmentUseCase(_appointmentsGatewayMock.Object);
         }
 
         [Theory]
@@ -34,10 +35,17 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 #pragma warning restore xUnit1026
         {
             // Arrange
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = bookingReference,
+                SorCode = SorCode,
+                LocationId = LocationId,
+                StartDateTime = It.IsAny<DateTime>(),
+                EndDateTime = It.IsAny<DateTime>()
+            };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute(bookingReference, SorCode, LocationId,
-                It.IsAny<DateTime>(), It.IsAny<DateTime>());
+            Func<Task> act = async () => await _systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -52,10 +60,17 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 #pragma warning restore xUnit1026
         {
             // Arrange
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = BookingReference,
+                SorCode = sorCode,
+                LocationId = LocationId,
+                StartDateTime = It.IsAny<DateTime>(),
+                EndDateTime = It.IsAny<DateTime>()
+            };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute(BookingReference, sorCode, LocationId,
-                It.IsAny<DateTime>(), It.IsAny<DateTime>());
+            Func<Task> act = async () => await _systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -70,10 +85,17 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 #pragma warning restore xUnit1026
         {
             // Arrange
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = BookingReference,
+                SorCode = SorCode,
+                LocationId = locationId,
+                StartDateTime = It.IsAny<DateTime>(),
+                EndDateTime = It.IsAny<DateTime>()
+            };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute(BookingReference, SorCode, locationId,
-                It.IsAny<DateTime>(), It.IsAny<DateTime>());
+            Func<Task> act = async () => await _systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -88,9 +110,18 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
             var startDate = new DateTime(2022, 1, 21);
             var endDate = startDate.AddDays(-1);
 
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = BookingReference,
+                SorCode = SorCode,
+                LocationId = LocationId,
+                StartDateTime = startDate,
+                EndDateTime = endDate
+            };
+
             // Act
             Func<Task> act = async () =>
-                await systemUnderTest.Execute(BookingReference, SorCode, LocationId, startDate, endDate);
+                await _systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>();
@@ -109,19 +140,23 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 #pragma warning restore CA1707
         {
             // Arrange
-            this.appointmentsGatewayMock.Setup(x => x.BookAppointment(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<DateTime>(),
-                    It.IsAny<DateTime>()
-                )
-            ).ReturnsAsync(BookingReference);
+            this._appointmentsGatewayMock
+                .Setup(x => x.BookAppointment(It.IsAny<BookAppointmentRequest>()))
+                .ReturnsAsync(BookingReference);
+
+            var startDateTime = It.IsAny<DateTime>();
+
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = BookingReference,
+                SorCode = SorCode,
+                LocationId = LocationId,
+                StartDateTime = startDateTime,
+                EndDateTime = startDateTime.AddDays(1)
+            };
 
             // Act
-            var startDateTime = It.IsAny<DateTime>();
-            var actual = await systemUnderTest.Execute(BookingReference, SorCode, LocationId,
-                startDateTime, startDateTime.AddDays(1));
+            var actual = await _systemUnderTest.Execute(request);
 
             // Assert
             Assert.Equal(BookingReference, actual);

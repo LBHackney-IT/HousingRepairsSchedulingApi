@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
+using HousingRepairsSchedulingApi.Boundary.Requests;
 using HousingRepairsSchedulingApi.Gateways.Interfaces;
 using HousingRepairsSchedulingApi.UseCases;
 using Moq;
@@ -11,13 +12,13 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 
     public class RetrieveAvailableAppointmentsTests
     {
-        private readonly RetrieveAvailableAppointmentsUseCase sytemUndertest;
-        private readonly Mock<IAppointmentsGateway> appointmentsGatewayMock;
+        private readonly RetrieveAvailableAppointmentsUseCase _sytemUndertest;
+        private readonly Mock<IAppointmentsGateway> _appointmentsGatewayMock;
 
         public RetrieveAvailableAppointmentsTests()
         {
-            appointmentsGatewayMock = new Mock<IAppointmentsGateway>();
-            sytemUndertest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object);
+            _appointmentsGatewayMock = new Mock<IAppointmentsGateway>();
+            _sytemUndertest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object);
         }
 
         [Theory]
@@ -29,10 +30,16 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 #pragma warning restore xUnit1026
         {
             // Arrange
-            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object);
+            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object);
+
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = sorCode,
+                LocationId = "locationId"
+            };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute(sorCode, "locationId");
+            Func<Task> act = async () => await systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -47,10 +54,16 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 #pragma warning restore xUnit1026
         {
             // Arrange
-            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object);
+            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object);
+
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "uprn",
+                LocationId = locationId
+            };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute("uprn", locationId);
+            Func<Task> act = async () => await systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -62,10 +75,16 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 #pragma warning restore CA1707
         {
             // Arrange
-            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object);
+            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object);
+
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "SoR Code",
+                LocationId = "location Id"
+            };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute("SoR Code", "location Id", null);
+            Func<Task> act = async () => await systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().NotThrowAsync();
@@ -83,10 +102,21 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
         public async void GivenParameters_WhenExecute_ThenGetAvailableAppointmentsGatewayIsCalled()
 #pragma warning restore CA1707
         {
+            // Arrange
             const string uprn = "uprn";
             const string locationId = "locationId";
-            await sytemUndertest.Execute("uprn", "locationId");
-            appointmentsGatewayMock.Verify(x => x.GetAvailableAppointments(uprn, locationId, null), Times.Once);
+
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "uprn",
+                LocationId = "locationId"
+            };
+
+            // Act
+            await _sytemUndertest.Execute(request);
+
+            // Assert
+            _appointmentsGatewayMock.Verify(x => x.GetAvailableAppointments(request), Times.Once);
         }
     }
 }
