@@ -5,6 +5,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
     using System.Threading.Tasks;
     using FluentAssertions;
     using Gateways;
+    using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using Moq;
     using UseCases;
     using Xunit;

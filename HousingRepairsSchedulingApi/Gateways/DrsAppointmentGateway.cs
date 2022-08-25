@@ -7,18 +7,23 @@ namespace HousingRepairsSchedulingApi.Gateways
     using Ardalis.GuardClauses;
     using Domain;
     using Helpers;
+    using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using Services.Drs;
 
     public class DrsAppointmentGateway : IAppointmentsGateway
     {
-        private readonly int requiredNumberOfAppointmentDays;
-        private readonly int appointmentSearchTimeSpanInDays;
-        private readonly int appointmentLeadTimeInDays;
-        private readonly int maximumNumberOfRequests;
-        private readonly IDrsService drsService;
+        private readonly int _requiredNumberOfAppointmentDays;
+        private readonly int _appointmentSearchTimeSpanInDays;
+        private readonly int _appointmentLeadTimeInDays;
+        private readonly int _maximumNumberOfRequests;
+        private readonly IDrsService _drsService;
 
-        public DrsAppointmentGateway(IDrsService drsService, int requiredNumberOfAppointmentDays,
-            int appointmentSearchTimeSpanInDays, int appointmentLeadTimeInDays, int maximumNumberOfRequests)
+        public DrsAppointmentGateway(
+            IDrsService drsService,
+            int requiredNumberOfAppointmentDays,
+            int appointmentSearchTimeSpanInDays,
+            int appointmentLeadTimeInDays,
+            int maximumNumberOfRequests)
         {
             Guard.Against.Null(drsService, nameof(drsService));
             Guard.Against.NegativeOrZero(requiredNumberOfAppointmentDays, nameof(requiredNumberOfAppointmentDays));
@@ -26,60 +31,78 @@ namespace HousingRepairsSchedulingApi.Gateways
             Guard.Against.Negative(appointmentLeadTimeInDays, nameof(appointmentLeadTimeInDays));
             Guard.Against.NegativeOrZero(maximumNumberOfRequests, nameof(maximumNumberOfRequests));
 
-            this.drsService = drsService;
-            this.requiredNumberOfAppointmentDays = requiredNumberOfAppointmentDays;
-            this.appointmentSearchTimeSpanInDays = appointmentSearchTimeSpanInDays;
-            this.appointmentLeadTimeInDays = appointmentLeadTimeInDays;
-            this.maximumNumberOfRequests = maximumNumberOfRequests;
+            _drsService = drsService;
+            _requiredNumberOfAppointmentDays = requiredNumberOfAppointmentDays;
+            _appointmentSearchTimeSpanInDays = appointmentSearchTimeSpanInDays;
+            _appointmentLeadTimeInDays = appointmentLeadTimeInDays;
+            _maximumNumberOfRequests = maximumNumberOfRequests;
         }
 
-        public async Task<IEnumerable<AppointmentSlot>> GetAvailableAppointments(string sorCode, string locationId,
+        public async Task<IEnumerable<AppointmentSlot>> GetAvailableAppointments(
+            string sorCode,
+            string locationId,
             DateTime? fromDate = null)
         {
             Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
             Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
 
-            var earliestDate = fromDate ?? DateTime.Today.AddDays(appointmentLeadTimeInDays);
+            var earliestDate = fromDate ?? DateTime.Today.AddDays(_appointmentLeadTimeInDays);
             var appointmentSlots = Enumerable.Empty<AppointmentSlot>();
 
             var numberOfRequests = 0;
-            while (numberOfRequests < maximumNumberOfRequests && appointmentSlots.Select(x => x.StartTime.Date).Distinct().Count() < requiredNumberOfAppointmentDays)
+
+            while (numberOfRequests < _maximumNumberOfRequests && appointmentSlots.Select(x => x.StartTime.Date).Distinct().Count() < _requiredNumberOfAppointmentDays)
             {
                 numberOfRequests++;
-                var appointments = await drsService.CheckAvailability(sorCode, locationId, earliestDate);
-                appointments = appointments.Where(x =>
-                    !(x.StartTime.Hour == 9 && x.EndTime.Minute == 30
-                      && x.EndTime.Hour == 14 && x.EndTime.Minute == 30) &&
-                    !(x.StartTime.Hour == 8 && x.EndTime.Minute == 0
-                                            && x.EndTime.Hour == 16 && x.EndTime.Minute == 0) &&
-                    !(x.StartTime.Hour == 8 && x.EndTime.Minute == 30
-                                            && x.EndTime.Hour == 13 && x.EndTime.Minute == 30) &&
-                    !(x.StartTime.Hour == 7 && x.EndTime.Minute == 0
-                                            && x.EndTime.Hour == 15 && x.EndTime.Minute == 0)
-                );
+                var appointments = await GetValidAppointments(sorCode, locationId, earliestDate);
+
                 appointmentSlots = appointmentSlots.Concat(appointments);
-                earliestDate = earliestDate.AddDays(appointmentSearchTimeSpanInDays);
+                earliestDate = earliestDate.AddDays(_appointmentSearchTimeSpanInDays);
             }
 
-            appointmentSlots = appointmentSlots.GroupBy(x => x.StartTime.Date).Take(requiredNumberOfAppointmentDays)
+            appointmentSlots = appointmentSlots
+                .GroupBy(x => x.StartTime.Date)
+                .Take(_requiredNumberOfAppointmentDays)
                 .SelectMany(x => x.Select(y => y));
 
             return appointmentSlots;
         }
 
-        public async Task<string> BookAppointment(string bookingReference, string sorCode, string locationId,
-            DateTime startDateTime, DateTime endDateTime)
+        private async Task<IEnumerable<AppointmentSlot>> GetValidAppointments(string sorCode, string locationId, DateTime earliestDate)
+        {
+            var appointments = await _drsService.CheckAvailability(sorCode, locationId, earliestDate);
+
+            appointments = appointments.Where(x =>
+                !(x.StartTime.Hour == 9 && x.EndTime.Minute == 30
+                  && x.EndTime.Hour == 14 && x.EndTime.Minute == 30) &&
+                !(x.StartTime.Hour == 8 && x.EndTime.Minute == 0
+                                        && x.EndTime.Hour == 16 && x.EndTime.Minute == 0) &&
+                !(x.StartTime.Hour == 8 && x.EndTime.Minute == 30
+                                        && x.EndTime.Hour == 13 && x.EndTime.Minute == 30) &&
+                !(x.StartTime.Hour == 7 && x.EndTime.Minute == 0
+                                        && x.EndTime.Hour == 15 && x.EndTime.Minute == 0)
+            );
+            return appointments;
+        }
+
+        public async Task<string> BookAppointment(
+            string bookingReference,
+            string sorCode,
+            string locationId,
+            DateTime startDateTime,
+            DateTime endDateTime)
         {
             Guard.Against.NullOrWhiteSpace(bookingReference, nameof(bookingReference));
             Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
             Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
             Guard.Against.OutOfRange(endDateTime, nameof(endDateTime), startDateTime, DateTime.MaxValue);
 
-            var bookingId = await drsService.CreateOrder(bookingReference, sorCode, locationId);
+            var bookingId = await _drsService.CreateOrder(bookingReference, sorCode, locationId);
+
             var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(startDateTime);
             var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(endDateTime);
 
-            await drsService.ScheduleBooking(bookingReference, bookingId, convertedStartTime, convertedEndTime);
+            await _drsService.ScheduleBooking(bookingReference, bookingId, convertedStartTime, convertedEndTime);
 
             return bookingReference;
         }

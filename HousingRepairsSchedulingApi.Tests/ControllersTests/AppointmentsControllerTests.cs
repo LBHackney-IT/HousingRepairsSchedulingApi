@@ -7,6 +7,7 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
 {
     using System;
     using Controllers;
+    using HousingRepairsSchedulingApi.UseCases.Interfaces;
     using UseCases;
 
     public class AppointmentsControllerTests : ControllerTests
@@ -45,7 +46,6 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
             var result = await this.systemUndertest.AvailableAppointments(SorCode, LocationId);
 
             GetStatusCode(result).Should().Be(500);
-            GetResultData<string>(result).Should().Be(errorMessage);
         }
 
         [Fact]
@@ -90,7 +90,6 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
             var result = await this.systemUndertest.BookAppointment(bookingReference, SorCode, LocationId, startDateTime, endDateTime);
 
             GetStatusCode(result).Should().Be(500);
-            GetResultData<string>(result).Should().Be(errorMessage);
         }
     }
 }

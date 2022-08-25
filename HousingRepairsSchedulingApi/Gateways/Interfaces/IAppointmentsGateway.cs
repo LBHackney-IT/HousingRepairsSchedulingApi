@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace HousingRepairsSchedulingApi.Gateways
+namespace HousingRepairsSchedulingApi.Gateways.Interfaces
 {
     using Domain;
 

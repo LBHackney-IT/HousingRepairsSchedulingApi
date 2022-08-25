@@ -11,6 +11,8 @@ namespace HousingRepairsSchedulingApi
 {
     using System.ServiceModel;
     using Gateways;
+    using HousingRepairsSchedulingApi.Gateways.Interfaces;
+    using HousingRepairsSchedulingApi.UseCases.Interfaces;
     using Microsoft.Extensions.Options;
     using Services.Drs;
     using UseCases;

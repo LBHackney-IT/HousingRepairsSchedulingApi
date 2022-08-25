@@ -1,10 +1,11 @@
-namespace HousingRepairsSchedulingApi.Gateways
+namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using Domain;
+    using HousingRepairsSchedulingApi.Gateways.Interfaces;
 
     public class DummyAppointmentsGateway : IAppointmentsGateway
     {

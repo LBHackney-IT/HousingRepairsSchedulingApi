@@ -3,7 +3,9 @@ namespace HousingRepairsSchedulingApi.Services.Drs
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.Json;
     using System.Threading.Tasks;
+    using Amazon.Lambda.Core;
     using Ardalis.GuardClauses;
     using Domain;
     using Microsoft.Extensions.Options;
@@ -15,18 +17,18 @@ namespace HousingRepairsSchedulingApi.Services.Drs
         private const string DummyUserId = "HousingRepairsOnline";
         private const string Priority = "N";
 
-        private readonly SOAP drsSoapClient;
-        private readonly IOptions<DrsOptions> drsOptions;
+        private readonly SOAP _drsSoapClient;
+        private readonly IOptions<DrsOptions> _drsOptions;
 
-        private string sessionId;
+        private string _sessionId;
 
         public DrsService(SOAP drsSoapClient, IOptions<DrsOptions> drsOptions)
         {
             Guard.Against.Null(drsSoapClient, nameof(drsSoapClient));
             Guard.Against.Null(drsOptions, nameof(drsOptions));
 
-            this.drsSoapClient = drsSoapClient;
-            this.drsOptions = drsOptions;
+            _drsSoapClient = drsSoapClient;
+            _drsOptions = drsOptions;
         }
 
         public async Task<IEnumerable<AppointmentSlot>> CheckAvailability(string sorCode, string locationId, DateTime earliestDate)
@@ -35,10 +37,10 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
             var checkAvailability = new xmbCheckAvailability
             {
-                sessionId = this.sessionId,
+                sessionId = _sessionId,
                 periodBegin = earliestDate,
                 periodBeginSpecified = true,
-                periodEnd = earliestDate.AddDays(drsOptions.Value.SearchTimeSpanInDays - 1),
+                periodEnd = earliestDate.AddDays(_drsOptions.Value.SearchTimeSpanInDays - 1),
                 periodEndSpecified = true,
                 theOrder = new order
                 {
@@ -58,21 +60,30 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                 }
             };
 
-            var checkAvailabilityResponse = await this.drsSoapClient.checkAvailabilityAsync(new checkAvailability(checkAvailability));
+            try
+            {
+                var checkAvailabilityResponse = await _drsSoapClient.checkAvailabilityAsync(new checkAvailability(checkAvailability));
 
-            var appointmentSlots = checkAvailabilityResponse.@return.theSlots
-                .Where(x => x.slotsForDay != null)
-                .SelectMany(x =>
-                    x.slotsForDay.Where(y => y.available == availableValue.YES).Select(y =>
-                        new AppointmentSlot
-                        {
-                            StartTime = y.beginDate,
-                            EndTime = y.endDate,
-                        }
-                    )
-            );
+                var appointmentSlots = checkAvailabilityResponse.@return.theSlots
+                    .Where(x => x.slotsForDay != null)
+                    .SelectMany(x =>
+                        x.slotsForDay.Where(y => y.available == availableValue.YES).Select(y =>
+                            new AppointmentSlot
+                            {
+                                StartTime = y.beginDate,
+                                EndTime = y.endDate,
+                            }
+                        )
+                );
 
-            return appointmentSlots;
+                return appointmentSlots;
+            }
+            catch (Exception e)
+            {
+                LambdaLogger.Log("An error was thrown when calling _drsSoapClient.checkAvailabilityAsync: " + JsonSerializer.Serialize(e));
+
+                throw;
+            }
         }
 
         public async Task<int> CreateOrder(string bookingReference, string sorCode, string locationId)
@@ -85,7 +96,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
             var createOrder = new xmbCreateOrder
             {
-                sessionId = this.sessionId,
+                sessionId = _sessionId,
                 theOrder = new order
                 {
                     contract = DrsContract,
@@ -108,10 +119,19 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                 }
             };
 
-            var createOrderResponse = await drsSoapClient.createOrderAsync(new createOrder(createOrder));
-            var result = createOrderResponse.@return.theOrder.theBookings[0].bookingId;
+            try
+            {
+                var createOrderResponse = await _drsSoapClient.createOrderAsync(new createOrder(createOrder));
+                var result = createOrderResponse.@return.theOrder.theBookings[0].bookingId;
 
-            return result;
+                return result;
+            }
+            catch (Exception e)
+            {
+                LambdaLogger.Log("An error was thrown when calling _drsSoapClient.createOrderAsync: " + JsonSerializer.Serialize(e));
+
+                throw;
+            }
         }
 
         public async Task ScheduleBooking(string bookingReference, int bookingId, DateTime startDateTime, DateTime endDateTime)
@@ -123,7 +143,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
             var scheduleBooking = new xmbScheduleBooking
             {
-                sessionId = sessionId,
+                sessionId = _sessionId,
                 theBooking = new booking
                 {
                     bookingId = bookingId,
@@ -138,24 +158,34 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                 }
             };
 
-            _ = await this.drsSoapClient.scheduleBookingAsync(new scheduleBooking(scheduleBooking));
+            try
+            {
+                _ = await _drsSoapClient.scheduleBookingAsync(new scheduleBooking(scheduleBooking));
+            }
+            catch (Exception e)
+            {
+                LambdaLogger.Log("An error was thrown when calling _drsSoapClient.scheduleBookingAsync: " + JsonSerializer.Serialize(e));
+
+                throw;
+            }
         }
 
         private async Task OpenSession()
         {
             var xmbOpenSession = new xmbOpenSession
             {
-                login = drsOptions.Value.Login,
-                password = drsOptions.Value.Password
+                login = _drsOptions.Value.Login,
+                password = _drsOptions.Value.Password
             };
-            var response = await this.drsSoapClient.openSessionAsync(new openSession(xmbOpenSession));
 
-            sessionId = response.@return.sessionId;
+            var response = await _drsSoapClient.openSessionAsync(new openSession(xmbOpenSession));
+
+            _sessionId = response.@return.sessionId;
         }
 
         private async Task EnsureSessionOpened()
         {
-            if (this.sessionId == null)
+            if (_sessionId == null)
             {
                 await OpenSession();
             }

@@ -6,16 +6,17 @@ namespace HousingRepairsSchedulingApi.UseCases
     using System.Threading.Tasks;
     using Ardalis.GuardClauses;
     using Domain;
-    using Gateways;
     using HACT.Dtos;
+    using HousingRepairsSchedulingApi.Gateways.Interfaces;
+    using HousingRepairsSchedulingApi.UseCases.Interfaces;
 
     public class RetrieveAvailableAppointmentsUseCase : IRetrieveAvailableAppointmentsUseCase
     {
-        private readonly IAppointmentsGateway appointmentsGateway;
+        private readonly IAppointmentsGateway _appointmentsGateway;
 
         public RetrieveAvailableAppointmentsUseCase(IAppointmentsGateway appointmentsGateway)
         {
-            this.appointmentsGateway = appointmentsGateway;
+            _appointmentsGateway = appointmentsGateway;
         }
 
         public async Task<IEnumerable<Appointment>> Execute(string sorCode, string locationId, DateTime? fromDate = null)
@@ -23,11 +24,9 @@ namespace HousingRepairsSchedulingApi.UseCases
             Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
             Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
 
-            var availableAppointments = await appointmentsGateway.GetAvailableAppointments(sorCode, locationId, fromDate);
+            var availableAppointments = await _appointmentsGateway.GetAvailableAppointments(sorCode, locationId, fromDate);
 
-            var result = availableAppointments.Select(x => x.ToHactAppointment());
-
-            return result;
+            return availableAppointments.Select(x => x.ToHactAppointment());
         }
     }
 }
