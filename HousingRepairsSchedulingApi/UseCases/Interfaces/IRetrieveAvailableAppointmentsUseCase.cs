@@ -1,4 +1,4 @@
-namespace HousingRepairsSchedulingApi.UseCases
+namespace HousingRepairsSchedulingApi.UseCases.Interfaces
 {
     using System;
     using System.Collections.Generic;

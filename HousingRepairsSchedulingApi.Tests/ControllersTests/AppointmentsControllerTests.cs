@@ -7,6 +7,7 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
 {
     using System;
     using Controllers;
+    using HousingRepairsSchedulingApi.UseCases.Interfaces;
     using UseCases;
 
     public class AppointmentsControllerTests : ControllerTests

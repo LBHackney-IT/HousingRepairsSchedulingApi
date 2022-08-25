@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
-using HousingRepairsSchedulingApi.Gateways;
+using HousingRepairsSchedulingApi.Gateways.Interfaces;
 using HousingRepairsSchedulingApi.UseCases;
 using Moq;
 using Xunit;
