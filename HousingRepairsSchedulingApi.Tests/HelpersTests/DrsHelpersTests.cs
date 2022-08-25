@@ -13,11 +13,14 @@ namespace HousingRepairsSchedulingApi.Tests.HelpersTests
         [Theory]
         public void MapsToDrsTime(int month, int hourIn, int expectedHour)
         {
+            // Arrange
             var timeIn = new DateTime(2020, month, 01, hourIn, 00, 00, DateTimeKind.Utc);
             var expected = new DateTime(2020, month, 01, expectedHour, 00, 00, DateTimeKind.Utc);
 
+            // Act
             var result = DrsHelpers.ConvertToDrsTimeZone(timeIn);
 
+            // Assert
             result.Should().Be(expected);
         }
 
@@ -26,11 +29,14 @@ namespace HousingRepairsSchedulingApi.Tests.HelpersTests
         [Theory]
         public void MapsFromDrsTime(int month, int hourIn, int expectedHour)
         {
+            // Arrange
             var timeIn = new DateTime(2020, month, 01, hourIn, 00, 00, DateTimeKind.Utc);
             var expected = new DateTime(2020, month, 01, expectedHour, 00, 00, DateTimeKind.Utc);
 
+            // Act
             var result = DrsHelpers.ConvertFromDrsTimeZone(timeIn);
 
+            // Assert
             result.Should().Be(expected);
         }
     }

@@ -75,17 +75,13 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
         public async Task TestBookAppointmentEndpoint()
         {
             // Arrange
-            const string bookingReference = "bookingReference";
-            var startDateTime = It.IsAny<DateTime>();
-            var endDateTime = It.IsAny<DateTime>();
-
             var request = new BookAppointmentRequest
             {
-                BookingReference = bookingReference,
+                BookingReference = "bookingReference",
                 SorCode = SorCode,
                 LocationId = LocationId,
-                StartDateTime = startDateTime,
-                EndDateTime = endDateTime
+                StartDateTime = It.IsAny<DateTime>(),
+                EndDateTime = It.IsAny<DateTime>()
             };
 
             // Act
@@ -96,20 +92,14 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
         }
 
         [Fact]
-#pragma warning disable CA1707
         public async Task GivenAFromDate_WhenRequestingAvailableAppointment_ThenResultsAreReturned()
-#pragma warning restore CA1707
         {
             // Arrange
-            const string sorCode = "sorCode";
-            const string locationId = "locationId";
-            var fromDate = new DateTime(2021, 12, 15);
-
             var request = new GetAvailableAppointmentsRequest
             {
-                SorCode = sorCode,
-                LocationId = locationId,
-                FromDate = fromDate
+                SorCode = "sorCode",
+                LocationId = "locationId",
+                FromDate = new DateTime(2021, 12, 15)
             };
 
             // Act
@@ -124,21 +114,19 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
         public async Task ReturnsErrorWhenFailsToBookAppointments()
         {
             // Arrange
-            const string bookingReference = "bookingReference";
-            var startDateTime = It.IsAny<DateTime>();
-            var endDateTime = It.IsAny<DateTime>();
-
             const string errorMessage = "An error message";
 
-            _bookAppointmentUseCaseMock.Setup(x => x.Execute(It.IsAny<BookAppointmentRequest>())).Throws(new Exception(errorMessage));
+            _bookAppointmentUseCaseMock
+                .Setup(x => x.Execute(It.IsAny<BookAppointmentRequest>()))
+                .Throws(new Exception(errorMessage));
 
             var request = new BookAppointmentRequest
             {
-                BookingReference = bookingReference,
+                BookingReference = "bookingReference",
                 SorCode = SorCode,
                 LocationId = LocationId,
-                StartDateTime = startDateTime,
-                EndDateTime = endDateTime
+                StartDateTime = It.IsAny<DateTime>(),
+                EndDateTime = It.IsAny<DateTime>()
             };
 
             // Act
