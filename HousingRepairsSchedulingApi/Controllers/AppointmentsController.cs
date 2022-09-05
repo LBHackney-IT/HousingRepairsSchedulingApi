@@ -6,10 +6,10 @@ namespace HousingRepairsSchedulingApi.Controllers
     using Amazon.Lambda.Core;
     using HousingRepairsSchedulingApi.UseCases.Interfaces;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
     using Sentry;
     using UseCases;
     using Constants = HousingRepairsSchedulingApi.Constants;
-    using Microsoft.Extensions.Logging;
 
     [ApiController]
     [Route($"{Constants.ApiV1RoutePrefix}[controller]")]

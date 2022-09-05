@@ -4,12 +4,12 @@ namespace HousingRepairsSchedulingApi.Gateways
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
     using Ardalis.GuardClauses;
     using Domain;
     using Helpers;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using Services.Drs;
-    using Microsoft.Extensions.Logging;
 
     public class DrsAppointmentGateway : IAppointmentsGateway
     {
