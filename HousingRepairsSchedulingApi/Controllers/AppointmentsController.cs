@@ -22,10 +22,12 @@ namespace HousingRepairsSchedulingApi.Controllers
 
         public AppointmentsController(
             IRetrieveAvailableAppointmentsUseCase retrieveAvailableAppointmentsUseCase,
-            IBookAppointmentUseCase bookAppointmentUseCase)
+            IBookAppointmentUseCase bookAppointmentUseCase,
+            ILogger<AppointmentsController> logger)
         {
             _retrieveAvailableAppointmentsUseCase = retrieveAvailableAppointmentsUseCase;
             _bookAppointmentUseCase = bookAppointmentUseCase;
+            _logger = logger;
         }
 
         [HttpGet]

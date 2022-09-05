@@ -25,7 +25,8 @@ namespace HousingRepairsSchedulingApi.Gateways
             int requiredNumberOfAppointmentDays,
             int appointmentSearchTimeSpanInDays,
             int appointmentLeadTimeInDays,
-            int maximumNumberOfRequests)
+            int maximumNumberOfRequests,
+            ILogger<DrsAppointmentGateway> logger)
         {
             Guard.Against.Null(drsService, nameof(drsService));
             Guard.Against.NegativeOrZero(requiredNumberOfAppointmentDays, nameof(requiredNumberOfAppointmentDays));
@@ -38,6 +39,7 @@ namespace HousingRepairsSchedulingApi.Gateways
             _appointmentSearchTimeSpanInDays = appointmentSearchTimeSpanInDays;
             _appointmentLeadTimeInDays = appointmentLeadTimeInDays;
             _maximumNumberOfRequests = maximumNumberOfRequests;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<AppointmentSlot>> GetAvailableAppointments(
