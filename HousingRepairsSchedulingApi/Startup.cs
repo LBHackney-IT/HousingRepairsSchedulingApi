@@ -13,6 +13,7 @@ namespace HousingRepairsSchedulingApi
     using Gateways;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using HousingRepairsSchedulingApi.UseCases.Interfaces;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
     using Services.Drs;
     using UseCases;
@@ -50,17 +51,7 @@ namespace HousingRepairsSchedulingApi
 
             services.AddTransient<IDrsService, DrsService>();
 
-            services.AddTransient<IAppointmentsGateway, DrsAppointmentGateway>(
-                sp =>
-                {
-                    var drsOptions = sp.GetRequiredService<IOptions<DrsOptions>>();
-                    var appointmentSearchTimeSpanInDays = drsOptions.Value.SearchTimeSpanInDays;
-                    var appointmentLeadTimeInDays = drsOptions.Value.AppointmentLeadTimeInDays;
-                    var maximumNumberOfRequests = drsOptions.Value.MaximumNumberOfRequests;
-                    return new DrsAppointmentGateway(sp.GetService<IDrsService>(),
-                        5, appointmentSearchTimeSpanInDays, appointmentLeadTimeInDays, maximumNumberOfRequests);
-                }
-            );
+            InitializeAppointmentsGateway(services);
 
             services.AddSwaggerGen(c =>
             {
@@ -72,6 +63,25 @@ namespace HousingRepairsSchedulingApi
             // var addressHost = new Uri(address).Host;
             services.AddHealthChecks();
             // .AddTcpHealthCheck(options => options.AddHost(addressHost, 80), name: "DRS Host TCP Ping");
+        }
+
+        private static void InitializeAppointmentsGateway(IServiceCollection services)
+        {
+            var provider = services.BuildServiceProvider();
+
+            var logger = provider.GetRequiredService<ILogger<DrsAppointmentGateway>>();
+
+            services.AddTransient<IAppointmentsGateway, DrsAppointmentGateway>(
+                        sp =>
+                        {
+                            var drsOptions = sp.GetRequiredService<IOptions<DrsOptions>>();
+                            var appointmentSearchTimeSpanInDays = drsOptions.Value.SearchTimeSpanInDays;
+                            var appointmentLeadTimeInDays = drsOptions.Value.AppointmentLeadTimeInDays;
+                            var maximumNumberOfRequests = drsOptions.Value.MaximumNumberOfRequests;
+                            return new DrsAppointmentGateway(sp.GetService<IDrsService>(),
+                                5, appointmentSearchTimeSpanInDays, appointmentLeadTimeInDays, maximumNumberOfRequests, logger);
+                        }
+                    );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
