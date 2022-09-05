@@ -9,6 +9,7 @@ namespace HousingRepairsSchedulingApi.Gateways
     using Helpers;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using Services.Drs;
+    using Microsoft.Extensions.Logging;
 
     public class DrsAppointmentGateway : IAppointmentsGateway
     {
@@ -17,6 +18,7 @@ namespace HousingRepairsSchedulingApi.Gateways
         private readonly int _appointmentLeadTimeInDays;
         private readonly int _maximumNumberOfRequests;
         private readonly IDrsService _drsService;
+        private readonly ILogger<DrsAppointmentGateway> _logger;
 
         public DrsAppointmentGateway(
             IDrsService drsService,
@@ -92,6 +94,9 @@ namespace HousingRepairsSchedulingApi.Gateways
             DateTime startDateTime,
             DateTime endDateTime)
         {
+            _logger.LogInformation($"Appointment times for booking reference {bookingReference} - start time is {startDateTime} and end time is {endDateTime}.");
+
+
             Guard.Against.NullOrWhiteSpace(bookingReference, nameof(bookingReference));
             Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
             Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
@@ -101,6 +106,8 @@ namespace HousingRepairsSchedulingApi.Gateways
 
             var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(startDateTime);
             var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(endDateTime);
+
+            _logger.LogInformation($"Converted times for booking reference {bookingReference} - start time is {convertedStartTime} and end time is {convertedEndTime} prior to sending to DRS.");
 
             await _drsService.ScheduleBooking(bookingReference, bookingId, convertedStartTime, convertedEndTime);
 

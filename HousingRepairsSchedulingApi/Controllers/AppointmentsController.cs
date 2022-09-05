@@ -9,6 +9,7 @@ namespace HousingRepairsSchedulingApi.Controllers
     using Sentry;
     using UseCases;
     using Constants = HousingRepairsSchedulingApi.Constants;
+    using Microsoft.Extensions.Logging;
 
     [ApiController]
     [Route($"{Constants.ApiV1RoutePrefix}[controller]")]
@@ -17,6 +18,7 @@ namespace HousingRepairsSchedulingApi.Controllers
     {
         private readonly IRetrieveAvailableAppointmentsUseCase _retrieveAvailableAppointmentsUseCase;
         private readonly IBookAppointmentUseCase _bookAppointmentUseCase;
+        private readonly ILogger<AppointmentsController> _logger;
 
         public AppointmentsController(
             IRetrieveAvailableAppointmentsUseCase retrieveAvailableAppointmentsUseCase,
@@ -59,6 +61,8 @@ namespace HousingRepairsSchedulingApi.Controllers
         {
             try
             {
+                _logger.LogInformation($"Appointment times (from HousingRepairsOnlineAPI) for booking reference {bookingReference} - start time is {startDateTime} and end time is {endDateTime}.");
+
                 var result = await _bookAppointmentUseCase.Execute(bookingReference, sorCode, locationId, startDateTime, endDateTime);
 
                 return this.Ok(result);
