@@ -6,6 +6,7 @@ namespace HousingRepairsSchedulingApi.Controllers
     using Amazon.Lambda.Core;
     using HousingRepairsSchedulingApi.UseCases.Interfaces;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
     using Sentry;
     using UseCases;
     using Constants = HousingRepairsSchedulingApi.Constants;
@@ -17,13 +18,16 @@ namespace HousingRepairsSchedulingApi.Controllers
     {
         private readonly IRetrieveAvailableAppointmentsUseCase _retrieveAvailableAppointmentsUseCase;
         private readonly IBookAppointmentUseCase _bookAppointmentUseCase;
+        private readonly ILogger<AppointmentsController> _logger;
 
         public AppointmentsController(
             IRetrieveAvailableAppointmentsUseCase retrieveAvailableAppointmentsUseCase,
-            IBookAppointmentUseCase bookAppointmentUseCase)
+            IBookAppointmentUseCase bookAppointmentUseCase,
+            ILogger<AppointmentsController> logger)
         {
             _retrieveAvailableAppointmentsUseCase = retrieveAvailableAppointmentsUseCase;
             _bookAppointmentUseCase = bookAppointmentUseCase;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -59,6 +63,8 @@ namespace HousingRepairsSchedulingApi.Controllers
         {
             try
             {
+                _logger.LogInformation($"Appointment times (from HousingRepairsOnlineAPI) for booking reference {bookingReference} - start time is {startDateTime} and end time is {endDateTime}.");
+
                 var result = await _bookAppointmentUseCase.Execute(bookingReference, sorCode, locationId, startDateTime, endDateTime);
 
                 return this.Ok(result);

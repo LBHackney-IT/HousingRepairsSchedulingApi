@@ -8,6 +8,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
     using Domain;
     using FluentAssertions;
     using Gateways;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Services.Drs;
     using Xunit;
@@ -30,7 +31,8 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 this.drsServiceMock.Object,
                 RequiredNumberOfAppointmentDays,
                 AppointmentSearchTimeSpanInDays,
-                AppointmentLeadTimeInDays, MaximumNumberOfRequests);
+                AppointmentLeadTimeInDays, MaximumNumberOfRequests,
+                new NullLogger<DrsAppointmentGateway>());
         }
 
         [Fact]
@@ -46,7 +48,8 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 default,
                 default,
                 default,
-                default);
+                default,
+                new NullLogger<DrsAppointmentGateway>());
 
             // Assert
             act.Should().ThrowExactly<ArgumentNullException>();
@@ -67,7 +70,9 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 invalidRequiredNumberOfAppointments,
                 default,
                 default,
-                default);
+                default,
+                new NullLogger<DrsAppointmentGateway>()
+                );
 
             // Assert
             act.Should().ThrowExactly<ArgumentException>();
@@ -86,7 +91,8 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 1,
                 1,
                 -1,
-                default);
+                default,
+                new NullLogger<DrsAppointmentGateway>());
 
             // Assert
             act.Should().ThrowExactly<ArgumentException>();
@@ -107,7 +113,8 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 1,
                 invalidAppointmentSearchTimeSpanInDays,
                 default,
-                default);
+                default,
+                new NullLogger<DrsAppointmentGateway>());
 
             // Assert
             act.Should().ThrowExactly<ArgumentException>();
@@ -128,7 +135,8 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 1,
                 1,
                 default,
-                invalidMaximumNumberOfRequests);
+                invalidMaximumNumberOfRequests,
+                new NullLogger<DrsAppointmentGateway>());
 
             // Assert
             act.Should().ThrowExactly<ArgumentException>().WithParameterName("maximumNumberOfRequests");
@@ -383,7 +391,8 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 this.drsServiceMock.Object,
                 1,
                 AppointmentSearchTimeSpanInDays,
-                AppointmentLeadTimeInDays, int.MaxValue);
+                AppointmentLeadTimeInDays, int.MaxValue,
+                new NullLogger<DrsAppointmentGateway>());
 
             drsServiceMock.SetupSequence(x => x.CheckAvailability(
                     It.IsAny<string>(),
@@ -426,7 +435,8 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 this.drsServiceMock.Object,
                 1,
                 AppointmentSearchTimeSpanInDays,
-                AppointmentLeadTimeInDays, 1);
+                AppointmentLeadTimeInDays, 1,
+                new NullLogger<DrsAppointmentGateway>());
 
             drsServiceMock.SetupSequence(x => x.CheckAvailability(
                     It.IsAny<string>(),
