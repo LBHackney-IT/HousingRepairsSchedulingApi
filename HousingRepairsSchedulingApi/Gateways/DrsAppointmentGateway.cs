@@ -104,6 +104,8 @@ namespace HousingRepairsSchedulingApi.Gateways
             Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
             Guard.Against.OutOfRange(endDateTime, nameof(endDateTime), startDateTime, DateTime.MaxValue);
 
+            _logger.LogInformation($"Appointment times for booking reference {bookingReference} after Guard clauses - start time is {startDateTime} and end time is {endDateTime}.");
+
             var bookingId = await _drsService.CreateOrder(bookingReference, sorCode, locationId);
 
             var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(startDateTime);
