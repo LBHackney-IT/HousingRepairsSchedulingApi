@@ -8,6 +8,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
     using Amazon.Lambda.Core;
     using Ardalis.GuardClauses;
     using Domain;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
 
     public class DrsService : IDrsService
@@ -21,14 +22,17 @@ namespace HousingRepairsSchedulingApi.Services.Drs
         private readonly IOptions<DrsOptions> _drsOptions;
 
         private string _sessionId;
+        private readonly ILogger<DrsService> _logger;
 
-        public DrsService(SOAP drsSoapClient, IOptions<DrsOptions> drsOptions)
+
+        public DrsService(SOAP drsSoapClient, IOptions<DrsOptions> drsOptions, ILogger<DrsService> logger)
         {
             Guard.Against.Null(drsSoapClient, nameof(drsSoapClient));
             Guard.Against.Null(drsOptions, nameof(drsOptions));
 
             _drsSoapClient = drsSoapClient;
             _drsOptions = drsOptions;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<AppointmentSlot>> CheckAvailability(string sorCode, string locationId, DateTime earliestDate)
@@ -139,6 +143,8 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             Guard.Against.NullOrWhiteSpace(bookingReference, nameof(bookingReference));
             Guard.Against.OutOfRange(endDateTime, nameof(endDateTime), startDateTime, DateTime.MaxValue);
 
+            _logger.LogInformation($"Scheduling booking in DRS. Booking reference {bookingReference}. Start time is {startDateTime} and end time is {endDateTime}.");
+
             await EnsureSessionOpened();
 
             var scheduleBooking = new xmbScheduleBooking
@@ -157,6 +163,9 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                     assignedEndSpecified = true
                 }
             };
+
+            _logger.LogInformation($"scheduleBooking object for booking reference {bookingReference}: {JsonSerializer.Serialize(scheduleBooking)}");
+
 
             try
             {

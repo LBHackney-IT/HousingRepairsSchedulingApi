@@ -96,15 +96,12 @@ namespace HousingRepairsSchedulingApi.Gateways
             DateTime startDateTime,
             DateTime endDateTime)
         {
-            _logger.LogInformation($"Appointment times for booking reference {bookingReference} - start time is {startDateTime} and end time is {endDateTime}.");
-
-
             Guard.Against.NullOrWhiteSpace(bookingReference, nameof(bookingReference));
             Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
             Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
             Guard.Against.OutOfRange(endDateTime, nameof(endDateTime), startDateTime, DateTime.MaxValue);
 
-            _logger.LogInformation($"Appointment times for booking reference {bookingReference} after Guard clauses - start time is {startDateTime} and end time is {endDateTime}.");
+            _logger.LogInformation($"Appointment times for booking reference {bookingReference} - start time is {startDateTime} and end time is {endDateTime}.");
 
             var bookingId = await _drsService.CreateOrder(bookingReference, sorCode, locationId);
 
