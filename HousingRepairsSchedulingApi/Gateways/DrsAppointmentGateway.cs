@@ -101,14 +101,16 @@ namespace HousingRepairsSchedulingApi.Gateways
             Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
             Guard.Against.OutOfRange(endDateTime, nameof(endDateTime), startDateTime, DateTime.MaxValue);
 
-            _logger.LogInformation($"Appointment times for booking reference {bookingReference} - start time is {startDateTime} and end time is {endDateTime}.");
+            _logger.LogInformation($"Appointment times for booking reference {bookingReference} - start time is {startDateTime} and end time is {endDateTime}");
 
             var bookingId = await _drsService.CreateOrder(bookingReference, sorCode, locationId);
+
+            _logger.LogInformation($"Order created successfully for {bookingReference}");
 
             var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(startDateTime);
             var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(endDateTime);
 
-            _logger.LogInformation($"Converted times for booking reference {bookingReference} - start time is {convertedStartTime} and end time is {convertedEndTime} prior to sending to DRS.");
+            _logger.LogInformation($"Converted times for booking reference {bookingReference} - start time is {convertedStartTime} and end time is {convertedEndTime} prior to sending to DRS");
 
             await _drsService.ScheduleBooking(bookingReference, bookingId, convertedStartTime, convertedEndTime);
 
