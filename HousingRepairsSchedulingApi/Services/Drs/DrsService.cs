@@ -98,6 +98,8 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
             await EnsureSessionOpened();
 
+            LambdaLogger.Log($"About to call CreateOrder with following parameters booking reference: {bookingReference}, sorCode {sorCode}, locationId {locationId};");
+
             var createOrder = new xmbCreateOrder
             {
                 sessionId = _sessionId,
@@ -123,10 +125,14 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                 }
             };
 
+            LambdaLogger.Log($"Built create order object {bookingReference}, sorCode {sorCode}, locationId {locationId};");
+
             try
             {
                 var createOrderResponse = await _drsSoapClient.createOrderAsync(new createOrder(createOrder));
                 var result = createOrderResponse.@return.theOrder.theBookings[0].bookingId;
+
+                LambdaLogger.Log($"Successfully called createOrderAsync with {bookingReference}, response booking ID {result};");
 
                 return result;
             }
