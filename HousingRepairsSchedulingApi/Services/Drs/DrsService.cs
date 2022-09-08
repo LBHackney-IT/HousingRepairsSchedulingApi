@@ -130,9 +130,12 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             try
             {
                 var createOrderResponse = await _drsSoapClient.createOrderAsync(new createOrder(createOrder));
+
+                LambdaLogger.Log($"Successfully called createOrderAsync with {bookingReference}.");
+
                 var result = createOrderResponse.@return.theOrder.theBookings[0].bookingId;
 
-                LambdaLogger.Log($"Successfully called createOrderAsync with {bookingReference}, response booking ID {result};");
+                LambdaLogger.Log($"Returning result after sending work order {bookingReference} to DRS. Response booking ID: {result};");
 
                 return result;
             }
