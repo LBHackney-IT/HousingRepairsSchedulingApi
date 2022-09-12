@@ -10,6 +10,9 @@ executors:
   docker-python:
     docker:
       - image: circleci/python:3.7
+  docker-terraform:
+    docker:
+      - image: "hashicorp/terraform:light"
   docker-dotnet:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
@@ -76,6 +79,27 @@ commands:
           command: |
             cd ./HousingRepairsSchedulingApi/
             sls deploy --stage <<parameters.stage>> --conceal
+
+  terraform-init-then-apply:	
+    description: "Initializes and applies terraform configuration"	
+    parameters:	
+      environment:	
+        type: string	
+    steps:	
+      - *attach_workspace	
+      - checkout	
+      - run:	
+          command: |	
+            cd ./terraform/<<parameters.environment>>/	
+            terraform get -update=true	
+            terraform init	
+          name: get and init	
+      - run:	
+          name: apply	
+          command: |	
+            cd ./terraform/<<parameters.environment>>/	
+            terraform apply -auto-approve
+
 jobs:
   check-code-formatting:
     executor: docker-dotnet
@@ -132,6 +156,21 @@ jobs:
     steps:
       - assume-role-and-persist-workspace:
           aws-account: $AWS_ACCOUNT_PRODUCTION
+  terraform-init-and-apply-to-development:	
+    executor: docker-terraform	
+    steps:	
+      - terraform-init-then-apply:	
+          environment: "development"	
+  terraform-init-and-apply-to-staging:	
+    executor: docker-terraform	
+    steps:	
+      - terraform-init-then-apply:	
+          environment: "staging"	
+  terraform-init-and-apply-to-production:	
+    executor: docker-terraform	
+    steps:	
+      - terraform-init-then-apply:	
+          environment: "production"
 workflows:
   check-and-deploy-development:
     jobs:
@@ -146,9 +185,16 @@ workflows:
           filters:
             branches:
               only: development
+      - terraform-init-and-apply-to-development:	
+          requires:	
+            - assume-role-development	
+          filters:	
+            branches:	
+              only: development
       - deploy-to-development:
           requires:
             - assume-role-development
+            - terraform-init-and-apply-to-development
   check-and-deploy-staging-and-production:
     jobs:
       - build-and-test:
@@ -163,10 +209,17 @@ workflows:
           filters:
             branches:
               only: main
+      - terraform-init-and-apply-to-staging:
+          requires:
+            - assume-role-staging
+          filters:
+            branches:
+              only: main
       - deploy-to-staging:
           context: api-nuget-token-context
           requires:
             - assume-role-staging
+            - terraform-init-and-apply-to-staging
           filters:
             branches:
               only: main
@@ -181,11 +234,18 @@ workflows:
           filters:
             branches:
               only: main
+      - terraform-init-and-apply-to-production:
+          requires:
+            - assume-role-production
+          filters:
+            branches:
+              only: main
       - deploy-to-production:
           context: api-nuget-token-context
           requires:
             - permit-production-release
             - assume-role-production
+            - terraform-init-and-apply-to-production
           filters:
             branches:
               only: main
