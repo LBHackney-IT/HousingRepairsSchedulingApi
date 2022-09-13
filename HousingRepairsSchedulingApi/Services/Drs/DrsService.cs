@@ -140,7 +140,26 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             {
                 var createOrderResponse = await _drsSoapClient.createOrderAsync(new createOrder(createOrder));
 
-                LambdaLogger.Log($"Successfully called createOrderAsync with {bookingReference}. createOrderResponse: {JsonSerializer.Serialize(createOrderResponse)}");
+                LambdaLogger.Log($"Successfully called createOrderAsync with {bookingReference}. createOrderResponse: {createOrderResponse}");
+
+                if (createOrderResponse == null)
+                {
+                    LambdaLogger.Log($"'createOrderResponse' for booking reference {bookingReference} is null");
+                }
+                else
+                {
+                    LambdaLogger.Log($"'createOrderResponse' for booking reference {bookingReference} is not null");
+
+                }
+
+                if (createOrderResponse.@return == null)
+                {
+                    LambdaLogger.Log($"'createOrderResponse.@return' for booking reference {bookingReference} is null");
+                }
+                else
+                {
+                    LambdaLogger.Log($"'createOrderResponse.@return' for booking reference {bookingReference} is not null");
+                }
 
                 var result = createOrderResponse.@return.theOrder.theBookings[0].bookingId;
 
