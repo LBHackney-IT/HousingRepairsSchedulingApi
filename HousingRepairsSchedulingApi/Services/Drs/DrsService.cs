@@ -70,7 +70,8 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
                 _logger.LogInformation("Called checkAvailabilityAsync for {LocationId}, returning {Response}", locationId, checkAvailabilityResponse);
 
-                if (checkAvailabilityResponse?.@return?.theSlots == null) {
+                if (checkAvailabilityResponse?.@return?.theSlots == null)
+                {
                     _logger.LogInformation("checkAvailabilityAsync for {LocationId} returns null", locationId);
                 }
 
