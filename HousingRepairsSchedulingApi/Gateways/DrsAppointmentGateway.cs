@@ -6,7 +6,6 @@ namespace HousingRepairsSchedulingApi.Gateways
     using System.Threading.Tasks;
     using Ardalis.GuardClauses;
     using Domain;
-    using Helpers;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using Microsoft.Extensions.Logging;
     using Services.Drs;
@@ -54,11 +53,15 @@ namespace HousingRepairsSchedulingApi.Gateways
             var appointmentSlots = Enumerable.Empty<AppointmentSlot>();
 
             var numberOfRequests = 0;
+            var numberOfAppointments = 0;
 
             while (numberOfRequests < _maximumNumberOfRequests && appointmentSlots.Select(x => x.StartTime.Date).Distinct().Count() < _requiredNumberOfAppointmentDays)
             {
                 numberOfRequests++;
+
                 var appointments = await GetValidAppointments(sorCode, locationId, earliestDate);
+
+                numberOfAppointments += appointments.Count();
 
                 appointmentSlots = appointmentSlots.Concat(appointments);
                 earliestDate = earliestDate.AddDays(_appointmentSearchTimeSpanInDays);
@@ -69,12 +72,18 @@ namespace HousingRepairsSchedulingApi.Gateways
                 .Take(_requiredNumberOfAppointmentDays)
                 .SelectMany(x => x.Select(y => y));
 
+            _logger.LogInformation("GetAvailableAppointments returned {NumberOfAppointmentSlots} from {NumberOfAppointments} for {LocationId}", appointmentSlots.Count(), numberOfAppointments);
+
             return appointmentSlots;
         }
 
         private async Task<IEnumerable<AppointmentSlot>> GetValidAppointments(string sorCode, string locationId, DateTime earliestDate)
         {
+            _logger.LogInformation("About to call CheckAvailability for {LocationId}", locationId);
+
             var appointments = await _drsService.CheckAvailability(sorCode, locationId, earliestDate);
+
+            var initialNumberOfAppointments = appointments.Count();
 
             appointments = appointments.Where(x =>
                 !(x.StartTime.Hour == 9 && x.EndTime.Minute == 30
@@ -86,6 +95,9 @@ namespace HousingRepairsSchedulingApi.Gateways
                 !(x.StartTime.Hour == 7 && x.EndTime.Minute == 0
                                         && x.EndTime.Hour == 15 && x.EndTime.Minute == 0)
             );
+
+            _logger.LogInformation("GetValidAppointments returned {NumberOfValidAppointments} from {InitialNumberOfAppointments} for {LocationId}", appointments.Count(), initialNumberOfAppointments, locationId);
+
             return appointments;
         }
 

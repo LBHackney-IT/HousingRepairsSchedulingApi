@@ -1,13 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using FluentAssertions;
-using HousingRepairsSchedulingApi.Gateways.Interfaces;
-using HousingRepairsSchedulingApi.UseCases;
-using Moq;
-using Xunit;
 namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using FluentAssertions;
+    using HousingRepairsSchedulingApi.Gateways.Interfaces;
+    using HousingRepairsSchedulingApi.UseCases;
+    using Microsoft.Extensions.Logging.Abstractions;
+    using Moq;
+    using Xunit;
 
     public class RetrieveAvailableAppointmentsTests
     {
@@ -17,7 +18,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
         public RetrieveAvailableAppointmentsTests()
         {
             appointmentsGatewayMock = new Mock<IAppointmentsGateway>();
-            sytemUndertest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object);
+            sytemUndertest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
         }
 
         [Theory]
@@ -29,7 +30,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 #pragma warning restore xUnit1026
         {
             // Arrange
-            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object);
+            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
 
             // Act
             Func<Task> act = async () => await systemUnderTest.Execute(sorCode, "locationId");
@@ -47,7 +48,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 #pragma warning restore xUnit1026
         {
             // Arrange
-            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object);
+            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
 
             // Act
             Func<Task> act = async () => await systemUnderTest.Execute("uprn", locationId);
@@ -62,7 +63,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 #pragma warning restore CA1707
         {
             // Arrange
-            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object);
+            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
 
             // Act
             Func<Task> act = async () => await systemUnderTest.Execute("SoR Code", "location Id", null);
