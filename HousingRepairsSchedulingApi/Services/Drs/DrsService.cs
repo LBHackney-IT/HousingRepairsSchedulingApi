@@ -68,7 +68,11 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             {
                 var checkAvailabilityResponse = await _drsSoapClient.checkAvailabilityAsync(new checkAvailability(checkAvailability));
 
-                _logger.LogInformation("Called checkAvailabilityAsync for {LocationId}, returning {Response}", locationId, JsonSerializer.Serialize(checkAvailabilityResponse));
+                _logger.LogInformation("Called checkAvailabilityAsync for {LocationId}, returning {Response}", locationId, checkAvailabilityResponse);
+
+                if (checkAvailabilityResponse?.@return?.theSlots == null) {
+                    _logger.LogInformation("checkAvailabilityAsync for {LocationId} returns null", locationId);
+                }
 
                 var appointmentSlots = checkAvailabilityResponse.@return.theSlots
                     .Where(x => x.slotsForDay != null)

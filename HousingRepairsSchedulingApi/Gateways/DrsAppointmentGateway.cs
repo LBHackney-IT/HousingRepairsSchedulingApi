@@ -72,7 +72,7 @@ namespace HousingRepairsSchedulingApi.Gateways
                 .Take(_requiredNumberOfAppointmentDays)
                 .SelectMany(x => x.Select(y => y));
 
-            _logger.LogInformation("GetAvailableAppointments returned {NumberOfAppointmentSlots} from {NumberOfAppointments} for {LocationId}", appointmentSlots.Count(), numberOfAppointments);
+            _logger.LogInformation("GetAvailableAppointments returned {NumberOfAppointmentSlots} from {NumberOfAppointments} for {LocationId}", appointmentSlots.Count(), numberOfAppointments, locationId);
 
             return appointmentSlots;
         }
