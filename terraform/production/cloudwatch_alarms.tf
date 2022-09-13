@@ -1,6 +1,6 @@
 locals {
   namespace = "HousingRepairsSchedulingApi-Businesslogic-Metrics"
-  log_group_name = "HousingRepairsSchedulingApi-production"
+  log_group_name = "/aws/lambda/HousingRepairsSchedulingApi-production"
 }
 
 resource "aws_sns_topic" "housing-repairs-scheduling-canary" {
