@@ -9,14 +9,17 @@ namespace HousingRepairsSchedulingApi.UseCases
     using HACT.Dtos;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using HousingRepairsSchedulingApi.UseCases.Interfaces;
+    using Microsoft.Extensions.Logging;
 
     public class RetrieveAvailableAppointmentsUseCase : IRetrieveAvailableAppointmentsUseCase
     {
         private readonly IAppointmentsGateway _appointmentsGateway;
+        private readonly ILogger<RetrieveAvailableAppointmentsUseCase> _logger;
 
-        public RetrieveAvailableAppointmentsUseCase(IAppointmentsGateway appointmentsGateway)
+        public RetrieveAvailableAppointmentsUseCase(IAppointmentsGateway appointmentsGateway, ILogger<RetrieveAvailableAppointmentsUseCase> logger)
         {
             _appointmentsGateway = appointmentsGateway;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<Appointment>> Execute(string sorCode, string locationId, DateTime? fromDate = null)
@@ -25,6 +28,8 @@ namespace HousingRepairsSchedulingApi.UseCases
             Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
 
             var availableAppointments = await _appointmentsGateway.GetAvailableAppointments(sorCode, locationId, fromDate);
+
+            _logger.LogInformation("RetrieveAvailableAppointmentsUseCase received {NumberOfAvailableAppointments} from AppointmentGateway for {LocationId}", availableAppointments.Count(), locationId);
 
             return availableAppointments.Select(x => x.ToHactAppointment());
         }

@@ -68,6 +68,8 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             {
                 var checkAvailabilityResponse = await _drsSoapClient.checkAvailabilityAsync(new checkAvailability(checkAvailability));
 
+                _logger.LogInformation("Called checkAvailabilityAsync for {LocationId}, returning {Response}", locationId, JsonSerializer.Serialize(checkAvailabilityResponse));
+
                 var appointmentSlots = checkAvailabilityResponse.@return.theSlots
                     .Where(x => x.slotsForDay != null)
                     .SelectMany(x =>
@@ -80,11 +82,13 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                         )
                 );
 
+                _logger.LogInformation("Called checkAvailabilityAsync for {LocationId} returning {Count} appointment slots", locationId, appointmentSlots?.Count() ?? 0);
+
                 return appointmentSlots;
             }
             catch (Exception e)
             {
-                LambdaLogger.Log("An error was thrown when calling _drsSoapClient.checkAvailabilityAsync: " + JsonSerializer.Serialize(e));
+                _logger.LogInformation("An error was thrown when calling _drsSoapClient.checkAvailabilityAsync: {Exception}", JsonSerializer.Serialize(e));
 
                 throw;
             }
