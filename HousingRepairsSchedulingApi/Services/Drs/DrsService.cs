@@ -146,7 +146,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
             LambdaLogger.Log($"Attempting to JSON Serialize 'createOrderResponse.@return.theOrder.theBookings[0]' for booking reference {bookingReference}. Result: {JsonSerializer.Serialize(createOrderResponse?.@return?.theOrder?.theBookings[0])}");
 
-            LambdaLogger.Log($"Primary Order Number from 'createOrderResponse.@return.theOrder.primaryOrderNumber' for booking reference {bookingReference}. Result: {createOrderResponse?.@return.theOrder?.primaryOrderNumber}");
+            LambdaLogger.Log($"Primary Order Number from 'createOrderResponse.@return.theOrder.primaryOrderNumber' for booking reference {bookingReference}. Result: {createOrderResponse?.@return?.theOrder?.primaryOrderNumber}");
 
             LambdaLogger.Log($"Contract from 'createOrderResponse.@return.theOrder.theBookings[0].contract' for booking reference {bookingReference}. Result: {createOrderResponse?.@return?.theOrder?.theBookings[0]?.contract}");
 
