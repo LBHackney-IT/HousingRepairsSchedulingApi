@@ -93,12 +93,11 @@ commands:
           command: |
             cd ./terraform/<<parameters.environment>>/
             terraform get -update=true
-            terraform init
       - run:
-          name: validate
+          name: plan
           command: |
             cd ./terraform/<<parameters.environment>>/
-            terraform validate -json
+            terraform plan
 
   terraform-init-then-apply:
     description: "Initializes and applies terraform configuration"
