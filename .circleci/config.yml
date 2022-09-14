@@ -80,8 +80,8 @@ commands:
             cd ./HousingRepairsSchedulingApi/
             sls deploy --stage <<parameters.stage>> --conceal
 
-  terraform-validate:
-    description: "Validate terraform configuration"
+  terraform-plan:
+    description: "Plan and validate terraform configuration"
     parameters:
       environment:
         type: string
@@ -176,10 +176,10 @@ jobs:
     steps:
       - assume-role-and-persist-workspace:
           aws-account: $AWS_ACCOUNT_PRODUCTION
-  terraform-validate-staging:
+  terraform-plan-staging:
     executor: docker-terraform
     steps:
-      - terraform-validate:
+      - terraform-plan:
           environment: "staging"
   terraform-init-and-apply-to-development:
     executor: docker-terraform
@@ -230,14 +230,14 @@ workflows:
           # filters:
           #   branches:
           #     only: main
-      - terraform-validate-staging:
+      - terraform-plan-staging:
           requires:
             - assume-role-staging
       - terraform-init-and-apply-to-staging:
           requires:
             - check-code-formatting
             - build-and-test
-            - terraform-validate-staging
+            - terraform-plan-staging
           filters:
             branches:
               only: main
