@@ -93,6 +93,7 @@ commands:
           command: |
             cd ./terraform/<<parameters.environment>>/
             terraform get -update=true
+            terraform init
       - run:
           name: plan
           command: |
