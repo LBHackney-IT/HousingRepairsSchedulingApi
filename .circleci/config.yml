@@ -80,6 +80,26 @@ commands:
             cd ./HousingRepairsSchedulingApi/
             sls deploy --stage <<parameters.stage>> --conceal
 
+  terraform-plan:
+    description: "Plan and validate terraform configuration"
+    parameters:
+      environment:
+        type: string
+    steps:
+      - *attach_workspace
+      - checkout
+      - run:
+          name: get and init
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform get -update=true
+            terraform init
+      - run:
+          name: plan
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform plan
+
   terraform-init-then-apply:
     description: "Initializes and applies terraform configuration"
     parameters:
@@ -156,6 +176,11 @@ jobs:
     steps:
       - assume-role-and-persist-workspace:
           aws-account: $AWS_ACCOUNT_PRODUCTION
+  terraform-plan-staging:
+    executor: docker-terraform
+    steps:
+      - terraform-plan:
+          environment: "staging"
   terraform-init-and-apply-to-development:
     executor: docker-terraform
     steps:
@@ -172,46 +197,47 @@ jobs:
       - terraform-init-then-apply:
           environment: "production"
 workflows:
-  check-and-deploy-development:
-    jobs:
-      - check-code-formatting:
-          context: api-nuget-token-context
-      - build-and-test:
-          context: api-nuget-token-context
-      - assume-role-development:
-          context: api-assume-role-housing-development-context
-          requires:
-            - build-and-test
-          filters:
-            branches:
-              only: development
-      - terraform-init-and-apply-to-development:
-          requires:
-            - assume-role-development
-          filters:
-            branches:
-              only: development
-      - deploy-to-development:
-          requires:
-            - assume-role-development
-            - terraform-init-and-apply-to-development
+  # check-and-deploy-development:
+  #   jobs:
+  #     - check-code-formatting:
+  #         context: api-nuget-token-context
+  #     - build-and-test:
+  #         context: api-nuget-token-context
+  #     - terraform-validate
+  #     - assume-role-development:
+  #         context: api-assume-role-housing-development-context
+  #         requires:
+  #           - build-and-test
+  #         filters:
+  #           branches:
+  #             only: development
+  #     - terraform-init-and-apply-to-development:
+  #         requires:
+  #           - assume-role-development
+  #         filters:
+  #           branches:
+  #             only: development
+  #     - deploy-to-development:
+  #         requires:
+  #           - assume-role-development
+  #           - terraform-init-and-apply-to-development
   check-and-deploy-staging-and-production:
     jobs:
-      - build-and-test:
-          context: api-nuget-token-context
-          filters:
-            branches:
-              only: main
+      - check-code-formatting
+      - build-and-test
       - assume-role-staging:
           context: api-assume-role-housing-staging-context
-          requires:
-            - build-and-test
-          filters:
-            branches:
-              only: main
-      - terraform-init-and-apply-to-staging:
+          # filters:
+          #   branches:
+          #     only: main
+      - terraform-plan-staging:
           requires:
             - assume-role-staging
+      - terraform-init-and-apply-to-staging:
+          requires:
+            - check-code-formatting
+            - build-and-test
+            - terraform-plan-staging
           filters:
             branches:
               only: main
