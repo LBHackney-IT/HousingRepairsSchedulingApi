@@ -134,11 +134,11 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                 _logger.LogInformation("createOrderAsync returned an invalid response for {LocationId} ", locationId);
             }
 
-            LambdaLogger.Log($"Successfully called createOrderAsync with {bookingReference}. createOrderResponse: {createOrderResponse.ToString()}");
+            LambdaLogger.Log($"Successfully called createOrderAsync with {bookingReference}. createOrderResponse: {createOrderResponse}");
 
             LambdaLogger.Log($"'createOrderResponse' for booking reference {bookingReference}" + ((createOrderResponse == null) ? "is null" : "is not null"));
 
-            LambdaLogger.Log($"'createOrderResponse.@return' for booking reference {bookingReference}" + ((createOrderResponse.@return == null) ? "is null" : "is not null"));
+            LambdaLogger.Log($"'createOrderResponse.@return' for booking reference {bookingReference}" + ((createOrderResponse?.@return == null) ? "is null" : "is not null"));
 
             LambdaLogger.Log($"'createOrderResponse.@return.theOrder.theBookings[0].bookingId' for booking reference {bookingReference}: {createOrderResponse?.@return?.theOrder?.theBookings[0]?.bookingId}");
 
