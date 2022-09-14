@@ -3,7 +3,7 @@ provider "aws" {
 }
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
-locals {
+locs {
   application_name = "housing-repairs-scheduling-api" # The name to use for your application
 }
 
