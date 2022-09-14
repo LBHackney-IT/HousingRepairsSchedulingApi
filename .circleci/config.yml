@@ -188,41 +188,41 @@ jobs:
       - terraform-init-then-apply:
           environment: "production"
 workflows:
-  check-and-deploy-development:
-    jobs:
-      - check-code-formatting:
-          context: api-nuget-token-context
-      - build-and-test:
-          context: api-nuget-token-context
-      - terraform-validate
-      - assume-role-development:
-          context: api-assume-role-housing-development-context
-          requires:
-            - build-and-test
-          filters:
-            branches:
-              only: development
-      - terraform-init-and-apply-to-development:
-          requires:
-            - assume-role-development
-          filters:
-            branches:
-              only: development
-      - deploy-to-development:
-          requires:
-            - assume-role-development
-            - terraform-init-and-apply-to-development
+  # check-and-deploy-development:
+  #   jobs:
+  #     - check-code-formatting:
+  #         context: api-nuget-token-context
+  #     - build-and-test:
+  #         context: api-nuget-token-context
+  #     - terraform-validate
+  #     - assume-role-development:
+  #         context: api-assume-role-housing-development-context
+  #         requires:
+  #           - build-and-test
+  #         filters:
+  #           branches:
+  #             only: development
+  #     - terraform-init-and-apply-to-development:
+  #         requires:
+  #           - assume-role-development
+  #         filters:
+  #           branches:
+  #             only: development
+  #     - deploy-to-development:
+  #         requires:
+  #           - assume-role-development
+  #           - terraform-init-and-apply-to-development
   check-and-deploy-staging-and-production:
     jobs:
-      - build-and-test:
-          context: api-nuget-token-context
-          filters:
-            branches:
-              only: main
+      - check-code-formatting
+      - build-and-test
+      - terraform-validate
       - assume-role-staging:
           context: api-assume-role-housing-staging-context
           requires:
+            - check-code-formatting
             - build-and-test
+            - terraform-validate
           filters:
             branches:
               only: main
