@@ -80,6 +80,22 @@ commands:
             cd ./HousingRepairsSchedulingApi/
             sls deploy --stage <<parameters.stage>> --conceal
 
+    terraform-validate:
+      description: "Validate terraform configuration"
+      parameters:
+        environment:
+          type: string
+      steps:
+        - *attach_workspace
+        - checkout
+        - run:
+            command: |
+              cd ./terraform/<<parameters.environment>>/
+              terraform get -update=true
+              terraform init
+              terraform validate -json
+            name: validate
+
   terraform-init-then-apply:
     description: "Initializes and applies terraform configuration"
     parameters:
@@ -178,6 +194,7 @@ workflows:
           context: api-nuget-token-context
       - build-and-test:
           context: api-nuget-token-context
+      - terraform-validate
       - assume-role-development:
           context: api-assume-role-housing-development-context
           requires:
