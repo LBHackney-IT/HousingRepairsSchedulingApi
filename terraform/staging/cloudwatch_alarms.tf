@@ -32,7 +32,7 @@ resource "aws_cloudwatch_log_metric_filter" "housingrepairsschedulingapi-drs-che
 }
 
 resource "aws_cloudwatch_metric_alarm" "housingrepairsschedulingapi-drs-createorderasync-exceptions-alarm" {
-  alarm_name          = "housingrepairsschedulingapi-drs-exceptions"
+  alarm_name          = "housingrepairsschedulingapi-drs-createorderasync-exceptions"
   metric_name         = aws_cloudwatch_log_metric_filter.housingrepairsschedulingapi-drs-createorderasync-exceptions-filter.name
   threshold           = "3"
   statistic           = "Sum"
@@ -45,7 +45,7 @@ resource "aws_cloudwatch_metric_alarm" "housingrepairsschedulingapi-drs-createor
 }
 
 resource "aws_cloudwatch_metric_alarm" "housingrepairsschedulingapi-drs-checkavailabilityasync-exceptions-alarm" {
-  alarm_name          = "housingrepairsschedulingapi-drs-exceptions"
+  alarm_name          = "housingrepairsschedulingapi-drs-checkavailabilityasync-exceptions"
   metric_name         = aws_cloudwatch_log_metric_filter.housingrepairsschedulingapi-drs-checkavailabilityasync-exceptions-filter.name
   threshold           = "3"
   statistic           = "Sum"
