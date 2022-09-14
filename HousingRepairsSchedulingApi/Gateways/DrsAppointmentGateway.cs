@@ -7,6 +7,7 @@ namespace HousingRepairsSchedulingApi.Gateways
     using Ardalis.GuardClauses;
     using Domain;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
+    using HousingRepairsSchedulingApi.Helpers;
     using Microsoft.Extensions.Logging;
     using Services.Drs;
 
@@ -119,16 +120,12 @@ namespace HousingRepairsSchedulingApi.Gateways
 
             _logger.LogInformation($"Order created successfully for {bookingReference}");
 
-            //var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(startDateTime);
-            //var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(endDateTime);
+            var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(startDateTime);
+            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(endDateTime);
 
-            //_logger.LogInformation($"Converted times for booking reference {bookingReference} - start time is {convertedStartTime} and end time is {convertedEndTime} prior to sending to DRS");
+            _logger.LogInformation($"Converted times for booking reference {bookingReference} - start time is {convertedStartTime} and end time is {convertedEndTime} prior to sending to DRS");
 
-            //await _drsService.ScheduleBooking(bookingReference, bookingId, convertedStartTime, convertedEndTime);
-
-            _logger.LogInformation($"ConvertToDrsTimeZone has been temporarily removed for troubleshooting purposes. About to call _drsService.ScheduleBooking with non-converted times - Booking reference {bookingReference}");
-
-            await _drsService.ScheduleBooking(bookingReference, bookingId, startDateTime, endDateTime);
+            await _drsService.ScheduleBooking(bookingReference, bookingId, convertedStartTime, convertedEndTime);
 
             return bookingReference;
         }
