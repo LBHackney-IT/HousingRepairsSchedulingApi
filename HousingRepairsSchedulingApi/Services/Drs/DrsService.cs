@@ -68,11 +68,11 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             {
                 var checkAvailabilityResponse = await _drsSoapClient.checkAvailabilityAsync(new checkAvailability(checkAvailability));
 
-                _logger.LogInformation("Called checkAvailabilityAsync for {LocationId}, returning {Response}", locationId, checkAvailabilityResponse);
+                _logger.LogInformation("Called checkAvailabilityAsync for {LocationId}", locationId);
 
                 if (checkAvailabilityResponse?.@return?.theSlots == null)
                 {
-                    _logger.LogInformation("checkAvailabilityAsync for {LocationId} returns null", locationId);
+                    _logger.LogInformation("checkAvailabilityAsync returned an invalid response for {LocationId}", locationId);
                 }
 
                 var appointmentSlots = checkAvailabilityResponse.@return.theSlots
@@ -140,6 +140,11 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             {
                 var createOrderResponse = await _drsSoapClient.createOrderAsync(new createOrder(createOrder));
 
+                if (createOrderResponse?.@return?.theOrder?.theBookings[0]?.bookingId == null)
+                {
+                    _logger.LogInformation("createOrderAsync returned an invalid response for {LocationId} ", locationId);
+                }
+
                 LambdaLogger.Log($"Successfully called createOrderAsync with {bookingReference}. createOrderResponse: {JsonSerializer.Serialize(createOrderResponse)}");
 
                 var result = createOrderResponse.@return.theOrder.theBookings[0].bookingId;
@@ -183,7 +188,6 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             };
 
             _logger.LogInformation($"scheduleBooking object for booking reference {bookingReference}: {JsonSerializer.Serialize(scheduleBooking)}");
-
 
             try
             {
