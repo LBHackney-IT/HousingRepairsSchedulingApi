@@ -223,7 +223,7 @@ workflows:
       - build-and-test
       - assume-role-staging
       - terraform-validate-staging:
-        requires:
+          requires:
             - assume-role-staging
       - assume-role-staging:
           context: api-assume-role-housing-staging-context
