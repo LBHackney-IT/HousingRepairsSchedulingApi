@@ -220,13 +220,13 @@ workflows:
   check-and-deploy-staging-and-production:
     jobs:
       - check-code-formatting
-      # - build-and-test
+      - build-and-test
       # - terraform-validate-staging
       - assume-role-staging:
           context: api-assume-role-housing-staging-context
           requires:
             - check-code-formatting
-            # - build-and-test
+            - build-and-test
             # - terraform-validate-staging
           filters:
             branches:
