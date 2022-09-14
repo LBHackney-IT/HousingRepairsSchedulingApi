@@ -64,39 +64,30 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                 }
             };
 
-            try
+            var checkAvailabilityResponse = await _drsSoapClient.checkAvailabilityAsync(new checkAvailability(checkAvailability));
+
+            _logger.LogInformation("Called checkAvailabilityAsync for {LocationId}", locationId);
+
+            if (checkAvailabilityResponse?.@return?.theSlots == null)
             {
-                var checkAvailabilityResponse = await _drsSoapClient.checkAvailabilityAsync(new checkAvailability(checkAvailability));
-
-                _logger.LogInformation("Called checkAvailabilityAsync for {LocationId}, returning {Response}", locationId, checkAvailabilityResponse);
-
-                if (checkAvailabilityResponse?.@return?.theSlots == null)
-                {
-                    _logger.LogInformation("checkAvailabilityAsync for {LocationId} returns null", locationId);
-                }
-
-                var appointmentSlots = checkAvailabilityResponse.@return.theSlots
-                    .Where(x => x.slotsForDay != null)
-                    .SelectMany(x =>
-                        x.slotsForDay.Where(y => y.available == availableValue.YES).Select(y =>
-                            new AppointmentSlot
-                            {
-                                StartTime = y.beginDate,
-                                EndTime = y.endDate,
-                            }
-                        )
-                );
-
-                _logger.LogInformation("Called checkAvailabilityAsync for {LocationId} returning {Count} appointment slots", locationId, appointmentSlots?.Count() ?? 0);
-
-                return appointmentSlots;
+                _logger.LogInformation("checkAvailabilityAsync returned an invalid response for {LocationId}", locationId);
             }
-            catch (Exception e)
-            {
-                _logger.LogInformation("An error was thrown when calling _drsSoapClient.checkAvailabilityAsync: {Exception}", JsonSerializer.Serialize(e));
 
-                throw;
-            }
+            var appointmentSlots = checkAvailabilityResponse.@return.theSlots
+                .Where(x => x.slotsForDay != null)
+                .SelectMany(x =>
+                    x.slotsForDay.Where(y => y.available == availableValue.YES).Select(y =>
+                        new AppointmentSlot
+                        {
+                            StartTime = y.beginDate,
+                            EndTime = y.endDate,
+                        }
+                    )
+            );
+
+            _logger.LogInformation("Called checkAvailabilityAsync for {LocationId} returning {Count} appointment slots", locationId, appointmentSlots?.Count() ?? 0);
+
+            return appointmentSlots;
         }
 
         public async Task<int> CreateOrder(string bookingReference, string sorCode, string locationId)
@@ -136,9 +127,12 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
             LambdaLogger.Log($"Built create order object {bookingReference}, sorCode {sorCode}, locationId {locationId};");
 
-            try
+            var createOrderResponse = await _drsSoapClient.createOrderAsync(new createOrder(createOrder));
+
+            if (createOrderResponse?.@return?.theOrder?.theBookings[0]?.bookingId == null)
             {
-                var createOrderResponse = await _drsSoapClient.createOrderAsync(new createOrder(createOrder));
+                _logger.LogInformation("createOrderAsync returned an invalid response for {LocationId} ", locationId);
+            }
 
                 LambdaLogger.Log($"Successfully called createOrderAsync with {bookingReference}. createOrderResponse: {createOrderResponse.ToString()}");
 
@@ -156,18 +150,11 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
                 LambdaLogger.Log($"Contract from 'createOrderResponse.@return.theOrder.theBookings[0].contract' for booking reference {bookingReference}. Result: {createOrderResponse.@return.theOrder.theBookings[0].contract}");
 
-                var result = createOrderResponse.@return.theOrder.theBookings[0].bookingId;
+            var result = createOrderResponse.@return.theOrder.theBookings[0].bookingId;
 
-                LambdaLogger.Log($"Returning result after sending work order {bookingReference} to DRS. Response booking ID: {result};");
+            LambdaLogger.Log($"Returning result after sending work order {bookingReference} to DRS. Response booking ID: {result};");
 
-                return result;
-            }
-            catch (Exception e)
-            {
-                LambdaLogger.Log("An error was thrown when calling _drsSoapClient.createOrderAsync: " + JsonSerializer.Serialize(e));
-
-                throw;
-            }
+            return result;
         }
 
         public async Task ScheduleBooking(string bookingReference, int bookingId, DateTime startDateTime, DateTime endDateTime)
@@ -198,17 +185,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
             _logger.LogInformation($"scheduleBooking object for booking reference {bookingReference}: {JsonSerializer.Serialize(scheduleBooking)}");
 
-
-            try
-            {
-                _ = await _drsSoapClient.scheduleBookingAsync(new scheduleBooking(scheduleBooking));
-            }
-            catch (Exception e)
-            {
-                LambdaLogger.Log("An error was thrown when calling _drsSoapClient.scheduleBookingAsync: " + JsonSerializer.Serialize(e));
-
-                throw;
-            }
+            _ = await _drsSoapClient.scheduleBookingAsync(new scheduleBooking(scheduleBooking));
         }
 
         private async Task OpenSession()
