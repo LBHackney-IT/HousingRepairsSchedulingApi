@@ -89,12 +89,16 @@ commands:
       - *attach_workspace
       - checkout
       - run:
+          name: get and init
           command: |
             cd ./terraform/<<parameters.environment>>/
             terraform get -update=true
             terraform init
-            terraform validate -json
+      - run:
           name: validate
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform validate -json
 
   terraform-init-then-apply:
     description: "Initializes and applies terraform configuration"
