@@ -173,7 +173,7 @@ jobs:
       - assume-role-and-persist-workspace:
           aws-account: $AWS_ACCOUNT_PRODUCTION
   terraform-validate-staging:
-    executor: terraform-validate
+    executor: docker-terraform
     steps:
       - terraform-validate:
           environment: "staging"
@@ -221,13 +221,13 @@ workflows:
     jobs:
       - check-code-formatting
       - build-and-test
-      # - terraform-validate-staging
+      - terraform-validate-staging
       - assume-role-staging:
           context: api-assume-role-housing-staging-context
           requires:
             - check-code-formatting
             - build-and-test
-            # - terraform-validate-staging
+            - terraform-validate-staging
           filters:
             branches:
               only: main
