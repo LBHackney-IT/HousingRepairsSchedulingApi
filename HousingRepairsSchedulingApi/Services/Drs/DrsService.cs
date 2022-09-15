@@ -140,15 +140,15 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
             LambdaLogger.Log($"'createOrderResponse.@return' for booking reference {bookingReference}" + ((createOrderResponse?.@return == null) ? "is null" : "is not null"));
 
-            LambdaLogger.Log($"'createOrderResponse.@return.theOrder.theBookings[0].bookingId' for booking reference {bookingReference}: {createOrderResponse?.@return?.theOrder?.theBookings[0]?.bookingId}");
+            //LambdaLogger.Log($"'createOrderResponse.@return.theOrder.theBookings[0].bookingId' for booking reference {bookingReference}: {createOrderResponse?.@return?.theOrder?.theBookings[0]?.bookingId}");
 
-            LambdaLogger.Log($"Output from'createOrderResponse.@return.theOrder.theBookings' arrayfor booking reference {bookingReference}. Result: {createOrderResponse?.@return?.theOrder?.theBookings}");
+            //LambdaLogger.Log($"Output from'createOrderResponse.@return.theOrder.theBookings' arrayfor booking reference {bookingReference}. Result: {createOrderResponse?.@return?.theOrder?.theBookings}");
 
-            LambdaLogger.Log($"Attempting to JSON Serialize 'createOrderResponse.@return.theOrder.theBookings[0]' for booking reference {bookingReference}. Result: {JsonSerializer.Serialize(createOrderResponse?.@return?.theOrder?.theBookings[0])}");
+            //LambdaLogger.Log($"Attempting to JSON Serialize 'createOrderResponse.@return.theOrder.theBookings[0]' for booking reference {bookingReference}. Result: {JsonSerializer.Serialize(createOrderResponse?.@return?.theOrder?.theBookings[0])}");
 
-            LambdaLogger.Log($"Primary Order Number from 'createOrderResponse.@return.theOrder.primaryOrderNumber' for booking reference {bookingReference}. Result: {createOrderResponse?.@return?.theOrder?.primaryOrderNumber}");
+            //LambdaLogger.Log($"Primary Order Number from 'createOrderResponse.@return.theOrder.primaryOrderNumber' for booking reference {bookingReference}. Result: {createOrderResponse?.@return?.theOrder?.primaryOrderNumber}");
 
-            LambdaLogger.Log($"Contract from 'createOrderResponse.@return.theOrder.theBookings[0].contract' for booking reference {bookingReference}. Result: {createOrderResponse?.@return?.theOrder?.theBookings[0]?.contract}");
+            //LambdaLogger.Log($"Contract from 'createOrderResponse.@return.theOrder.theBookings[0].contract' for booking reference {bookingReference}. Result: {createOrderResponse?.@return?.theOrder?.theBookings[0]?.contract}");
 
             var result = createOrderResponse.@return.theOrder.theBookings[0].bookingId;
 
