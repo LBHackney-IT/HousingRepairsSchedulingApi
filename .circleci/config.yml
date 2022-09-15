@@ -182,7 +182,7 @@ jobs:
       - terraform-plan:
           environment: "staging"
   terraform-plan-production:
-    executor: docker-production
+    executor: docker-terraform
     steps:
       - terraform-plan:
           environment: "production"
