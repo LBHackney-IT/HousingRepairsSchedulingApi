@@ -80,26 +80,6 @@ commands:
             cd ./HousingRepairsSchedulingApi/
             sls deploy --stage <<parameters.stage>> --conceal
 
-  terraform-plan:
-    description: "Plan and validate terraform configuration"
-    parameters:
-      environment:
-        type: string
-    steps:
-      - *attach_workspace
-      - checkout
-      - run:
-          name: get and init
-          command: |
-            cd ./terraform/<<parameters.environment>>/
-            terraform get -update=true
-            terraform init
-      - run:
-          name: plan
-          command: |
-            cd ./terraform/<<parameters.environment>>/
-            terraform plan
-
   terraform-init-then-apply:
     description: "Initializes and applies terraform configuration"
     parameters:
@@ -176,16 +156,6 @@ jobs:
     steps:
       - assume-role-and-persist-workspace:
           aws-account: $AWS_ACCOUNT_PRODUCTION
-  terraform-plan-staging:
-    executor: docker-terraform
-    steps:
-      - terraform-plan:
-          environment: "staging"
-  terraform-plan-production:
-    executor: docker-terraform
-    steps:
-      - terraform-plan:
-          environment: "production"
   terraform-init-and-apply-to-development:
     executor: docker-terraform
     steps:
@@ -208,7 +178,6 @@ workflows:
   #         context: api-nuget-token-context
   #     - build-and-test:
   #         context: api-nuget-token-context
-  #     - terraform-validate
   #     - assume-role-development:
   #         context: api-assume-role-housing-development-context
   #         requires:
@@ -229,23 +198,20 @@ workflows:
   check-and-deploy-staging-and-production:
     jobs:
       - check-code-formatting
-      - build-and-test
+      - build-and-test:
+          context: api-nuget-token-context
+        
       - assume-role-staging:
           context: api-assume-role-housing-staging-context
-      - assume-role-production:
-          context: api-assume-role-housing-production-context
-      - terraform-plan-staging:
           requires:
-            - assume-role-staging
-      - terraform-plan-production:
-          requires:
-            - assume-role-production
+            - build-and-test
+            - check-code-formatting
+          filters:
+            branches:
+              only: main
       - terraform-init-and-apply-to-staging:
           requires:
-            - check-code-formatting
-            - build-and-test
-            - terraform-plan-staging
-            - terraform-plan-production
+            - assume-role-staging
           filters:
             branches:
               only: main
@@ -261,9 +227,16 @@ workflows:
           type: approval
           requires:
             - deploy-to-staging
-      - terraform-init-and-apply-to-production:
+      - assume-role-production:
+          context: api-assume-role-housing-production-context
           requires:
             - permit-production-release
+          filters:
+            branches:
+              only: main
+      - terraform-init-and-apply-to-production:
+          requires:
+            - assume-role-production
           filters:
             branches:
               only: main
