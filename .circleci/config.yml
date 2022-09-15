@@ -185,7 +185,7 @@ jobs:
     executor: docker-production
     steps:
       - terraform-plan:
-          environment: "staging"
+          environment: "production"
   terraform-init-and-apply-to-development:
     executor: docker-terraform
     steps:
@@ -232,7 +232,7 @@ workflows:
       - build-and-test
       - assume-role-staging:
           context: api-assume-role-housing-staging-context
-     - assume-role-production:
+      - assume-role-production:
           context: api-assume-role-housing-production-context
       - terraform-plan-staging:
           requires:
