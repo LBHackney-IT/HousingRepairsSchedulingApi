@@ -263,7 +263,7 @@ workflows:
             - deploy-to-staging
       - terraform-init-and-apply-to-production:
           requires:
-            - assume-role-production
+            - permit-production-release
           filters:
             branches:
               only: main
