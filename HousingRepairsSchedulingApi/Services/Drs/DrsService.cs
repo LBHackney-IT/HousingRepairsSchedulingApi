@@ -125,9 +125,16 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                 }
             };
 
-            LambdaLogger.Log($"Built create order object {bookingReference}, sorCode {sorCode}, locationId {locationId};");
+            LambdaLogger.Log($"Built create order object {bookingReference}, sorCode {sorCode}, locationId {locationId}. Object {JsonSerializer.Serialize(createOrder)};");
 
             var createOrderResponse = await _drsSoapClient.createOrderAsync(new createOrder(createOrder));
+
+            if (createOrderResponse.@return.status != responseStatus.success)
+            {
+                var errorMessage = createOrderResponse.@return.errorMsg;
+
+                LambdaLogger.Log(errorMessage);
+            }
 
             if (createOrderResponse?.@return?.theOrder?.theBookings?[0]?.bookingId == null)
             {
