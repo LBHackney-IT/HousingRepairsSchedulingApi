@@ -129,7 +129,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
             var createOrderResponse = await _drsSoapClient.createOrderAsync(new createOrder(createOrder));
 
-            if (createOrderResponse?.@return?.theOrder?.theBookings[0]?.bookingId == null)
+            if (createOrderResponse?.@return?.theOrder?.theBookings?[0]?.bookingId == null)
             {
                 _logger.LogInformation("createOrderAsync returned an invalid response for {LocationId} ", locationId);
             }
