@@ -6,6 +6,7 @@ namespace HousingRepairsSchedulingApi.Gateways
     using System.Threading.Tasks;
     using Ardalis.GuardClauses;
     using Domain;
+    using HousingRepairsSchedulingApi.Exceptions;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using HousingRepairsSchedulingApi.Helpers;
     using Microsoft.Extensions.Logging;
@@ -116,7 +117,22 @@ namespace HousingRepairsSchedulingApi.Gateways
 
             _logger.LogInformation($"Appointment times for booking reference {bookingReference} - start time is {startDateTime} and end time is {endDateTime}");
 
-            var bookingId = await _drsService.CreateOrder(bookingReference, sorCode, locationId);
+            var order = await _drsService.SelectOrder(int.Parse(bookingReference), DateTime.Now.AddDays(-30));
+
+            if (order == null)
+            {
+                throw new DrsException($"The DRS order for booking reference {bookingReference} is null");
+            }
+
+            if (order.theBookings == null || order.theBookings.Count() < 1)
+            {
+                throw new DrsException($"No valid booking found in DRS order with booking reference {bookingReference}");
+            }
+
+            if (order.theBookings[0].bookingId == null || order.theBookings[0].bookingId == 0)
+            {
+                throw new DrsException($"Booking ID for DRS order with booking reference {bookingReference} is invalid");
+            }
 
             _logger.LogInformation($"Order created successfully for {bookingReference}");
 
@@ -125,7 +141,7 @@ namespace HousingRepairsSchedulingApi.Gateways
 
             _logger.LogInformation($"Converted times for booking reference {bookingReference} - start time is {convertedStartTime} and end time is {convertedEndTime} prior to sending to DRS");
 
-            await _drsService.ScheduleBooking(bookingReference, bookingId, convertedStartTime, convertedEndTime);
+            await _drsService.ScheduleBooking(bookingReference, order.theBookings[0].bookingId, convertedStartTime, convertedEndTime);
 
             return bookingReference;
         }
