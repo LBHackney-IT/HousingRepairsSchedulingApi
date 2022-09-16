@@ -135,7 +135,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             {
                 var errorMessage = createOrderResponse.@return.errorMsg;
 
-                LambdaLogger.Log($"An error occurred while attempting to create and order booking reference {bookingReference}: {errorMessage}");
+                _logger.LogError($"An error occurred while attempting to create an order with booking reference {bookingReference}: {errorMessage}");
                 throw new DrsException(errorMessage);
             }
 
