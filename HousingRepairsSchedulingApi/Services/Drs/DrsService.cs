@@ -8,6 +8,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
     using Amazon.Lambda.Core;
     using Ardalis.GuardClauses;
     using Domain;
+    using HousingRepairsSchedulingApi.Exceptions;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
 
@@ -23,6 +24,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
 
         private string _sessionId;
         private readonly ILogger<DrsService> _logger;
+        private readonly DateTime _drsValidationHorizonDate = DateTime.Now.AddMonths(-3);
 
 
         public DrsService(SOAP drsSoapClient, IOptions<DrsOptions> drsOptions, ILogger<DrsService> logger)
@@ -133,7 +135,8 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             {
                 var errorMessage = createOrderResponse.@return.errorMsg;
 
-                LambdaLogger.Log(errorMessage);
+                LambdaLogger.Log($"An error occurred while attempting to create and order booking reference {bookingReference}: {errorMessage}");
+                throw new DrsException(errorMessage);
             }
 
             if (createOrderResponse?.@return?.theOrder?.theBookings?[0]?.bookingId == null)
@@ -218,6 +221,58 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             if (_sessionId == null)
             {
                 await OpenSession();
+            }
+        }
+
+        public async Task<order> SelectOrder(int workOrderId, DateTime? validationDate)
+        {
+            using var scope = _logger.BeginScope(Guid.NewGuid());
+
+            await EnsureSessionOpened();
+
+            var selectOrder = new selectOrder
+            {
+                selectOrder1 = new xmbSelectOrder
+                {
+                    sessionId = _sessionId,
+                    primaryOrderNumber = new[]
+                    {
+                        workOrderId.ToString()
+                    }
+                }
+            };
+
+            _logger.LogInformation("DRS selecting order {WorkOrderId} {request}", workOrderId, selectOrder);
+
+            var selectOrderResponse = await _drsSoapClient.selectOrderAsync(selectOrder);
+            if (selectOrderResponse.@return.status != responseStatus.success)
+            {
+                _logger.LogError(selectOrderResponse.@return.errorMsg);
+
+                if (validationDate.HasValue && validationDate < _drsValidationHorizonDate)
+                {
+                    _logger.LogWarning($"DRS selecting order {workOrderId} - order cannot be found but is archived - ignoring error");
+                }
+                else
+                {
+                    if (selectOrderResponse.@return.errorMsg.Contains("Unable to find order in OptiTime Web"))
+                    {
+                        _logger.LogWarning($"Couldn't find workorder {workOrderId} while closing");
+                    }
+                    else
+                    {
+                        throw new Exception($"Error with work order ID: {workOrderId}. {selectOrderResponse.@return.errorMsg}");
+                    }
+                }
+                return null;
+            }
+            else
+            {
+                var drsOrder = selectOrderResponse.@return.theOrders.First();
+
+                _logger.LogInformation("DRS selected order {WorkOrderId} {response}", workOrderId, drsOrder);
+
+                return drsOrder;
             }
         }
     }
