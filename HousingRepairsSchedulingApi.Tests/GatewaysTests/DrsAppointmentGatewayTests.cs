@@ -8,6 +8,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
     using Domain;
     using FluentAssertions;
     using Gateways;
+    using HousingRepairsSchedulingApi.Exceptions;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Services.Drs;
@@ -624,18 +625,100 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         {
             // Arrange
             var bookingReference = "10003829";
+            var startDateTime = new DateTime(2022, 05, 01);
 
             drsServiceMock.Setup(x =>
                 x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
             ).ReturnsAsync(new order { orderId = 863256, theBookings = new booking[] { new booking { bookingId = 12345 } } });
 
             // Act
-            var startDateTime = new DateTime(2022, 05, 01);
             var actual = await systemUnderTest.BookAppointment(bookingReference, SorCode, LocationId,
                 startDateTime, startDateTime.AddDays(1));
 
             // Assert
             Assert.Equal(bookingReference, actual);
+        }
+
+        public static IEnumerable<object[]> InvalidOrderTestData()
+        {
+            yield return new object[] { new DrsException() };
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidOrderTestData))]
+#pragma warning disable xUnit1026
+#pragma warning disable CA1707
+        public async void GivenANullOrderIsReturned_WhenSelectingAnOrder_ThenExceptionIsThrown<T>(T exception) where T : Exception
+#pragma warning restore CA1707
+#pragma warning restore xUnit1026
+        {
+            // Arrange
+            var bookingReference = "10003829";
+            var startDateTime = new DateTime(2022, 05, 01);
+
+            drsServiceMock.Setup(x =>
+                x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
+            ).ReturnsAsync((order)null);
+
+            // Act
+            var act = async () => await systemUnderTest.BookAppointment(bookingReference, SorCode, LocationId,
+                startDateTime, startDateTime.AddDays(1));
+
+            // Assert
+            await act.Should().ThrowExactlyAsync<T>();
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidOrderTestData))]
+#pragma warning disable xUnit1026
+#pragma warning disable CA1707
+        public async void GivenNoBookingsPresentInTheOrderResponse_WhenSelectingAnOrder_ThenExceptionIsThrown<T>(T exception) where T : Exception
+#pragma warning restore CA1707
+#pragma warning restore xUnit1026
+        {
+            // Arrange
+            var bookingReference = "10003829";
+            var startDateTime = new DateTime(2022, 05, 01);
+
+            drsServiceMock.Setup(x =>
+                x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
+            ).ReturnsAsync(new order { orderComments = "No bookings in this order" });
+
+            // Act
+            var act = async () => await systemUnderTest.BookAppointment(bookingReference, SorCode, LocationId,
+                startDateTime, startDateTime.AddDays(1));
+
+            // Assert
+            await act.Should().ThrowExactlyAsync<T>();
+        }
+
+        public static IEnumerable<object[]> InvalidBookingIdTestData()
+        {
+            yield return new object[] { new DrsException(), new order { theBookings = new booking[] { new booking { bookingId = 0 } } } };
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidBookingIdTestData))]
+#pragma warning disable xUnit1026
+#pragma warning disable CA1707
+        public async void GivenInvalidBookingIdTheOrderResponse_WhenSelectingAnOrder_ThenExceptionIsThrown<T>(T exception, order orderResponse) where T : Exception
+#pragma warning restore CA1707
+#pragma warning restore xUnit1026
+        {
+            // Arrange
+            var bookingReference = "10003829";
+            var startDateTime = new DateTime(2022, 05, 01);
+
+            drsServiceMock.Setup(x =>
+                x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
+            ).ReturnsAsync(orderResponse);
+
+            // Act
+            var act = async () => await systemUnderTest.BookAppointment(bookingReference, SorCode, LocationId,
+                startDateTime, startDateTime.AddDays(1));
+
+            // Assert
+            await act.Should().ThrowExactlyAsync<T>();
         }
     }
 }
