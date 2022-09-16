@@ -17,6 +17,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
     {
         private Mock<IDrsService> drsServiceMock = new();
         private DrsAppointmentGateway systemUnderTest;
+        private const int WorkOrderId = 10000047;
         private const int RequiredNumberOfAppointmentDays = 5;
         private const int AppointmentSearchTimeSpanInDays = 14;
         private const int AppointmentLeadTimeInDays = 0;
@@ -618,23 +619,23 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Fact]
 #pragma warning disable CA1707
-        public async void GivenValidArguments_WhenExecute_ThenBookingReferenceIsReturned()
+        public async void GivenValidArguments_WhenExecute_ThenOrderIsReturned()
 #pragma warning restore CA1707
         {
             // Arrange
-            const int bookingId = 12345;
+            var bookingReference = "10003829";
 
             drsServiceMock.Setup(x =>
-                x.CreateOrder(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())
-            ).ReturnsAsync(bookingId);
+                x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
+            ).ReturnsAsync(new order { orderId = 863256, theBookings = new booking[] { new booking { bookingId = 12345 } } });
 
             // Act
             var startDateTime = new DateTime(2022, 05, 01);
-            var actual = await systemUnderTest.BookAppointment(BookingReference, SorCode, LocationId,
+            var actual = await systemUnderTest.BookAppointment(bookingReference, SorCode, LocationId,
                 startDateTime, startDateTime.AddDays(1));
 
             // Assert
-            Assert.Equal(BookingReference, actual);
+            Assert.Equal(bookingReference, actual);
         }
     }
 }
