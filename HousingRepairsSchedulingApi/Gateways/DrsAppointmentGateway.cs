@@ -129,7 +129,7 @@ namespace HousingRepairsSchedulingApi.Gateways
                 throw new DrsException($"No valid booking found in DRS order with booking reference {bookingReference}");
             }
 
-            if (order.theBookings[0].bookingId == null || order.theBookings[0].bookingId == 0)
+            if (order.theBookings[0].bookingId == 0)
             {
                 throw new DrsException($"Booking ID for DRS order with booking reference {bookingReference} is invalid");
             }
