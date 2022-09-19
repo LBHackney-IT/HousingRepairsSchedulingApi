@@ -243,7 +243,8 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
             this.soapMock.Setup(x => x.createOrderAsync(It.IsAny<createOrder>()))
                 .ReturnsAsync(new createOrderResponse(new xmbCreateOrderResponse
                 {
-                    theOrder = new order { theBookings = new[] { new booking { bookingId = BookingId } } }
+                    status = responseStatus.success,
+                    theOrder = new order {theBookings = new[] { new booking { bookingId = BookingId } } }
                 }));
 
             // Act
