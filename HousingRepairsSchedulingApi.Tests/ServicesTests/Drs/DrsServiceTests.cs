@@ -244,7 +244,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
                 .ReturnsAsync(new createOrderResponse(new xmbCreateOrderResponse
                 {
                     status = responseStatus.success,
-                    theOrder = new order {theBookings = new[] { new booking { bookingId = BookingId } } }
+                    theOrder = new order { theBookings = new[] { new booking { bookingId = BookingId } } }
                 }));
 
             // Act
@@ -252,7 +252,6 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
 
             // Assert
             Assert.Equal(BookingId, actual);
-
         }
 
 
