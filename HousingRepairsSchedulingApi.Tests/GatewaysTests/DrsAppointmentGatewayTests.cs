@@ -641,74 +641,25 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         public static IEnumerable<object[]> InvalidOrderTestData()
         {
-            yield return new object[] { new DrsException() };
+            yield return new object[] { new DrsException(), "10003829", new DateTime(2022, 05, 01), (order)null };
+            yield return new object[] { new DrsException(), "10003829", new DateTime(2022, 05, 01), new order { orderComments = "No bookings in this order" } };
+            yield return new object[] { new DrsException(), "10003829", new DateTime(2022, 05, 01), new order { theBookings = new booking[] { new booking { bookingId = 0 } } } };
         }
 
         [Theory]
         [MemberData(nameof(InvalidOrderTestData))]
 #pragma warning disable xUnit1026
 #pragma warning disable CA1707
-        public async void GivenANullOrderIsReturned_WhenSelectingAnOrder_ThenExceptionIsThrown<T>(T exception) where T : Exception
+        public async void GivenInvalidOrderIsReturned_WhenSelectingAnOrder_ThenExceptionIsThrown<T>(
+            T exception,
+            string bookingReference,
+            DateTime startDateTime,
+            order orderResponse
+            ) where T : Exception
 #pragma warning restore CA1707
 #pragma warning restore xUnit1026
         {
             // Arrange
-            var bookingReference = "10003829";
-            var startDateTime = new DateTime(2022, 05, 01);
-
-            drsServiceMock.Setup(x =>
-                x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
-            ).ReturnsAsync((order)null);
-
-            // Act
-            var act = async () => await systemUnderTest.BookAppointment(bookingReference, SorCode, LocationId,
-                startDateTime, startDateTime.AddDays(1));
-
-            // Assert
-            await act.Should().ThrowExactlyAsync<T>();
-        }
-
-        [Theory]
-        [MemberData(nameof(InvalidOrderTestData))]
-#pragma warning disable xUnit1026
-#pragma warning disable CA1707
-        public async void GivenNoBookingsPresentInTheOrderResponse_WhenSelectingAnOrder_ThenExceptionIsThrown<T>(T exception) where T : Exception
-#pragma warning restore CA1707
-#pragma warning restore xUnit1026
-        {
-            // Arrange
-            var bookingReference = "10003829";
-            var startDateTime = new DateTime(2022, 05, 01);
-
-            drsServiceMock.Setup(x =>
-                x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
-            ).ReturnsAsync(new order { orderComments = "No bookings in this order" });
-
-            // Act
-            var act = async () => await systemUnderTest.BookAppointment(bookingReference, SorCode, LocationId,
-                startDateTime, startDateTime.AddDays(1));
-
-            // Assert
-            await act.Should().ThrowExactlyAsync<T>();
-        }
-
-        public static IEnumerable<object[]> InvalidBookingIdTestData()
-        {
-            yield return new object[] { new DrsException(), new order { theBookings = new booking[] { new booking { bookingId = 0 } } } };
-        }
-
-        [Theory]
-        [MemberData(nameof(InvalidBookingIdTestData))]
-#pragma warning disable xUnit1026
-#pragma warning disable CA1707
-        public async void GivenInvalidBookingIdTheOrderResponse_WhenSelectingAnOrder_ThenExceptionIsThrown<T>(T exception, order orderResponse) where T : Exception
-#pragma warning restore CA1707
-#pragma warning restore xUnit1026
-        {
-            // Arrange
-            var bookingReference = "10003829";
-            var startDateTime = new DateTime(2022, 05, 01);
-
             drsServiceMock.Setup(x =>
                 x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
             ).ReturnsAsync(orderResponse);
