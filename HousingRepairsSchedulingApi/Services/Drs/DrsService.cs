@@ -201,22 +201,28 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             _ = await _drsSoapClient.scheduleBookingAsync(new scheduleBooking(scheduleBooking));
         }
 
-        private async Task OpenSession()
+        public async Task OpenSession()
         {
             var xmbOpenSession = new xmbOpenSession
             {
                 login = _drsOptions.Value.Login,
                 password = _drsOptions.Value.Password
             };
-
-            var response = await _drsSoapClient.openSessionAsync(new openSession(xmbOpenSession));
-
+            var response = await _drsSoapClient.openSessionAsync(new openSession
+            {
+                openSession1 = xmbOpenSession
+            });
+            if (response.@return.status != responseStatus.success)
+            {
+                _logger.LogError(response.@return.errorMsg);
+                throw new DrsException(response.@return.errorMsg);
+            }
             _sessionId = response.@return.sessionId;
         }
 
         private async Task EnsureSessionOpened()
         {
-            if (_sessionId == null)
+            if (_sessionId is null)
             {
                 await OpenSession();
             }
