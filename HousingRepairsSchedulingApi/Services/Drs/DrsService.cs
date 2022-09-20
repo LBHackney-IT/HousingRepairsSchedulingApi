@@ -201,22 +201,24 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             _ = await _drsSoapClient.scheduleBookingAsync(new scheduleBooking(scheduleBooking));
         }
 
-        private async Task OpenSession()
+        public async Task OpenSession()
         {
             var xmbOpenSession = new xmbOpenSession
             {
                 login = _drsOptions.Value.Login,
                 password = _drsOptions.Value.Password
             };
-
-            var response = await _drsSoapClient.openSessionAsync(new openSession(xmbOpenSession));
+            var response = await _drsSoapClient.openSessionAsync(new openSession
+            {
+                openSession1 = xmbOpenSession
+            });
 
             _sessionId = response.@return.sessionId;
         }
 
         private async Task EnsureSessionOpened()
         {
-            if (_sessionId == null)
+            if (_sessionId is null)
             {
                 await OpenSession();
             }
@@ -239,6 +241,8 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                     }
                 }
             };
+
+            _logger.LogInformation("Session ID is {SessionId} prior to DRS selecting order {WorkOrderId}", selectOrder.selectOrder1.sessionId, workOrderId);
 
             _logger.LogInformation("DRS selecting order {WorkOrderId} {request}", workOrderId, selectOrder);
 
