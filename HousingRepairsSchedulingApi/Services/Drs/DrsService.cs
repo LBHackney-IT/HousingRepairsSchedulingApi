@@ -134,8 +134,6 @@ namespace HousingRepairsSchedulingApi.Services.Drs
             if (createOrderResponse.@return.status != responseStatus.success)
             {
                 var errorMessage = createOrderResponse.@return.errorMsg;
-
-                _logger.LogError($"An error occurred while attempting to create an order with booking reference {bookingReference}: {errorMessage}");
                 throw new DrsException(errorMessage);
             }
 
