@@ -9,6 +9,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
     using FluentAssertions;
     using Gateways;
     using HousingRepairsSchedulingApi.Exceptions;
+    using HousingRepairsSchedulingApi.Helpers;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Services.Drs;
@@ -620,12 +621,15 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Fact]
 #pragma warning disable CA1707
-        public async void GivenValidArguments_WhenExecute_ThenOrderIsReturned()
+        public async void GivenValidArguments_WhenExecute_ThenOrderIsReturnedAndScheduleBookingIsCalled()
 #pragma warning restore CA1707
         {
             // Arrange
             var bookingReference = "10003829";
             var startDateTime = new DateTime(2022, 05, 01);
+            var endDateTime = startDateTime.AddDays(1);
+            var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(startDateTime);
+            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(startDateTime.AddDays(1));
 
             drsServiceMock.Setup(x =>
                 x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
@@ -637,6 +641,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
             // Assert
             Assert.Equal(bookingReference, actual);
+            drsServiceMock.Verify(drsServiceMock => drsServiceMock.ScheduleBooking(bookingReference, 12345, convertedStartTime, convertedEndTime), Times.Once);
         }
 
         public static IEnumerable<object[]> InvalidOrderTestData()
