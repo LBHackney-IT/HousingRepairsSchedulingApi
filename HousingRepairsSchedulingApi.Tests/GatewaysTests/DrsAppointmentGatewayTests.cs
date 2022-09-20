@@ -641,21 +641,20 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         public static IEnumerable<object[]> InvalidOrderTestData()
         {
-            yield return new object[] { new DrsException(), "10003829", new DateTime(2022, 05, 01), (order)null };
-            yield return new object[] { new DrsException(), "10003829", new DateTime(2022, 05, 01), new order { orderComments = "No bookings in this order" } };
-            yield return new object[] { new DrsException(), "10003829", new DateTime(2022, 05, 01), new order { theBookings = new booking[] { new booking { bookingId = 0 } } } };
+            yield return new object[] {"10003829", new DateTime(2022, 05, 01), (order)null };
+            yield return new object[] {"10003829", new DateTime(2022, 05, 01), new order { orderComments = "No bookings in this order" } };
+            yield return new object[] {"10003829", new DateTime(2022, 05, 01), new order { theBookings = new booking[] { new booking { bookingId = 0 } } } };
         }
 
         [Theory]
         [MemberData(nameof(InvalidOrderTestData))]
 #pragma warning disable xUnit1026
 #pragma warning disable CA1707
-        public async void GivenInvalidOrderIsReturned_WhenSelectingAnOrder_ThenExceptionIsThrown<T>(
-            T exception,
+        public async void GivenInvalidOrderIsReturned_WhenSelectingAnOrder_ThenExceptionIsThrown(
             string bookingReference,
             DateTime startDateTime,
             order orderResponse
-            ) where T : Exception
+            )
 #pragma warning restore CA1707
 #pragma warning restore xUnit1026
         {
@@ -669,7 +668,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 startDateTime, startDateTime.AddDays(1));
 
             // Assert
-            await act.Should().ThrowExactlyAsync<T>();
+            await act.Should().ThrowAsync<DrsException>();
         }
     }
 }
