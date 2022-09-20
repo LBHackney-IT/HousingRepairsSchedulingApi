@@ -259,7 +259,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                     }
                     else
                     {
-                        throw new Exception($"Error with work order ID: {workOrderId}. {selectOrderResponse.@return.errorMsg}");
+                        throw new Exception($"An error occurred while attempting to select work order ID {workOrderId}. {selectOrderResponse.@return.errorMsg}");
                     }
                 }
                 return null;
