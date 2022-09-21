@@ -106,7 +106,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
             var request = new GetAvailableAppointmentsRequest
             {
                 SorCode = "sorCode",
-                LocationId = "locationId", 
+                LocationId = "locationId",
             };
 
             await sytemUndertest.Execute(request);
