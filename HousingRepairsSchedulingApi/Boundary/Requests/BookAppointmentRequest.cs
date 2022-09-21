@@ -1,5 +1,6 @@
 namespace HousingRepairsSchedulingApi.Boundary.Requests
 {
+    using System;
     using Microsoft.AspNetCore.Mvc;
 
     public class BookAppointmentRequest

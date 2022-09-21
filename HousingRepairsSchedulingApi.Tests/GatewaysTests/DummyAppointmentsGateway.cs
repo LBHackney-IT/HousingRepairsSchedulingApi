@@ -5,13 +5,15 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
     using System.Linq;
     using System.Threading.Tasks;
     using Domain;
+    using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
 
     public class DummyAppointmentsGateway : IAppointmentsGateway
     {
-        public async Task<IEnumerable<AppointmentSlot>> GetAvailableAppointments(string sorCode, string locationId, DateTime? fromDate = null)
+        public async Task<IEnumerable<AppointmentSlot>> GetAvailableAppointments(GetAvailableAppointmentsRequest request)
         {
-            var dateTime = (fromDate ?? DateTime.Today).Date;
+            var dateTime = (request.FromDate ?? DateTime.Today).Date;
+
             List<AppointmentSlot> unorderedAppointments = new List<AppointmentSlot>
             {
                 new ()

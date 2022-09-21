@@ -6,6 +6,7 @@ namespace HousingRepairsSchedulingApi.Gateways
     using System.Threading.Tasks;
     using Ardalis.GuardClauses;
     using Domain;
+    using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.Exceptions;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using HousingRepairsSchedulingApi.Helpers;
@@ -43,15 +44,12 @@ namespace HousingRepairsSchedulingApi.Gateways
             _logger = logger;
         }
 
-        public async Task<IEnumerable<AppointmentSlot>> GetAvailableAppointments(
-            string sorCode,
-            string locationId,
-            DateTime? fromDate = null)
+        public async Task<IEnumerable<AppointmentSlot>> GetAvailableAppointments(GetAvailableAppointmentsRequest request)
         {
-            Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
-            Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
+            Guard.Against.NullOrWhiteSpace(request.SorCode, nameof(request.SorCode));
+            Guard.Against.NullOrWhiteSpace(request.LocationId, nameof(request.LocationId));
 
-            var earliestDate = fromDate ?? DateTime.Today.AddDays(_appointmentLeadTimeInDays);
+            var earliestDate = request.FromDate ?? DateTime.Today.AddDays(_appointmentLeadTimeInDays);
             var appointmentSlots = Enumerable.Empty<AppointmentSlot>();
 
             var numberOfRequests = 0;
@@ -61,7 +59,7 @@ namespace HousingRepairsSchedulingApi.Gateways
             {
                 numberOfRequests++;
 
-                var appointments = await GetValidAppointments(sorCode, locationId, earliestDate);
+                var appointments = await GetValidAppointments(request.SorCode, request.LocationId, earliestDate);
 
                 numberOfAppointments += appointments.Count();
 
@@ -74,7 +72,7 @@ namespace HousingRepairsSchedulingApi.Gateways
                 .Take(_requiredNumberOfAppointmentDays)
                 .SelectMany(x => x.Select(y => y));
 
-            _logger.LogInformation("GetAvailableAppointments returned {NumberOfAppointmentSlots} from {NumberOfAppointments} for {LocationId}", appointmentSlots.Count(), numberOfAppointments, locationId);
+            _logger.LogInformation("GetAvailableAppointments returned {NumberOfAppointmentSlots} from {NumberOfAppointments} for {LocationId}", appointmentSlots.Count(), numberOfAppointments, request.LocationId);
 
             return appointmentSlots;
         }

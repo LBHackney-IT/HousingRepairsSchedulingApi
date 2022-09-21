@@ -8,6 +8,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
     using Domain;
     using FluentAssertions;
     using Gateways;
+    using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.Exceptions;
     using HousingRepairsSchedulingApi.Helpers;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -161,9 +162,14 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 #pragma warning restore xUnit1026
         {
             // Arrange
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = sorCode,
+                LocationId = It.IsAny<string>()
+            };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.GetAvailableAppointments(sorCode, It.IsAny<string>());
+            Func<Task> act = async () => await systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -178,10 +184,14 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 #pragma warning restore xUnit1026
         {
             // Arrange
-            var sorCode = "sorCode";
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "sorCode",
+                LocationId = locationId
+            };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.GetAvailableAppointments(sorCode, locationId);
+            Func<Task> act = async () => await systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -193,14 +203,18 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 #pragma warning restore CA1707
         {
             // Arrange
-            var sorCode = "sorCode";
-            var locationId = "locationId";
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "sorCode",
+                LocationId = "locationId"
+            };
+
             drsServiceMock.Setup(x => x.CheckAvailability(It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<DateTime>())).ReturnsAsync(CreateAppointmentsForSequentialDays(new DateTime(2022, 1, 17), 5));
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.GetAvailableAppointments(sorCode, locationId, null);
+            Func<Task> act = async () => await systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             await act.Should().NotThrowAsync<NullReferenceException>();
@@ -215,8 +229,11 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 #pragma warning restore CA1707
         {
             // Arrange
-            var sorCode = "sorCode";
-            var locationId = "locationId";
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "sorCode",
+                LocationId = "locationId"
+            };
 
             var setupSequentialResult = drsServiceMock.SetupSequence(x => x.CheckAvailability(
                     It.IsAny<string>(),
@@ -229,7 +246,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             }
 
             // Act
-            var actualAppointments = await systemUnderTest.GetAvailableAppointments(sorCode, locationId);
+            var actualAppointments = await systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             Assert.Equal(RequiredNumberOfAppointmentDays, actualAppointments.Select(x => x.StartTime.Date).Distinct().Count());
@@ -387,8 +404,11 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 #pragma warning restore CA1707
         {
             // Arrange
-            var sorCode = "sorCode";
-            var locationId = "locationId";
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "sorCode",
+                LocationId = "locationId",
+            };
 
             systemUnderTest = new DrsAppointmentGateway(
                 this.drsServiceMock.Object,
@@ -418,7 +438,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 };
 
             // Act
-            var actualAppointments = await systemUnderTest.GetAvailableAppointments(sorCode, locationId);
+            var actualAppointments = await systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             actualAppointments.Should().BeEquivalentTo(expected);
@@ -431,8 +451,11 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 #pragma warning restore CA1707
         {
             // Arrange
-            var sorCode = "sorCode";
-            var locationId = "locationId";
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "sorCode",
+                LocationId = "locationId"
+            };
 
             systemUnderTest = new DrsAppointmentGateway(
                 this.drsServiceMock.Object,
@@ -448,7 +471,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 .ReturnsAsync(new[] { unrequiredAppointmentSlot });
 
             // Act
-            var actualAppointments = await systemUnderTest.GetAvailableAppointments(sorCode, locationId);
+            var actualAppointments = await systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             actualAppointments.Should().BeEmpty();
@@ -481,8 +504,12 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 #pragma warning restore CA1707
         {
             // Arrange
-            var sorCode = "sorCode";
-            var locationId = "locationId";
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "sorCode",
+                LocationId = "locationId",
+                FromDate = new DateTime(2022, 1, 17)
+            };
 
             drsServiceMock.Setup(x => x.CheckAvailability(
                     It.IsAny<string>(),
@@ -497,7 +524,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                     RequiredNumberOfAppointmentDays - (RequiredNumberOfAppointmentDays - 2)));
 
             // Act
-            _ = await systemUnderTest.GetAvailableAppointments(sorCode, locationId, new DateTime(2022, 1, 17));
+            _ = await systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             drsServiceMock.VerifyAll();
@@ -507,11 +534,15 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         public async void GivenNoAppointmentSlots_WhenGettingAvailableApointments_ThenExactlyMaximumNumberOfRequestsAreSent()
         {
             // Arrange
-            var sorCode = "sorCode";
-            var locationId = "locationId";
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "sorCode",
+                LocationId = "locationId",
+                FromDate = new DateTime(2022, 1, 17)
+            };
 
             // Act
-            _ = await systemUnderTest.GetAvailableAppointments(sorCode, locationId, new DateTime(2022, 1, 17));
+            _ = await systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             drsServiceMock.Verify(x => x.CheckAvailability(
@@ -524,8 +555,12 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         public async void GivenAppointmentSlotsInFuture_WhenGettingAvailableApointments_ThenNoMoreThanMaximumNumberOfRequestsAreMade()
         {
             // Arrange
-            var sorCode = "sorCode";
-            var locationId = "locationId";
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "sorCode",
+                LocationId = "locationId",
+                FromDate = new DateTime(2022, 1, 17)
+            };
 
             Expression<Func<IDrsService, Task<IEnumerable<AppointmentSlot>>>> expression = x => x.CheckAvailability(
                 It.IsAny<string>(),
@@ -539,7 +574,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 .ReturnsAsync(CreateAppointmentsForSequentialDays(new DateTime(2022, 1, 17), 5));
 
             // Act
-            _ = await systemUnderTest.GetAvailableAppointments(sorCode, locationId, new DateTime(2022, 1, 17));
+            _ = await systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             drsServiceMock.Verify(x => x.CheckAvailability(

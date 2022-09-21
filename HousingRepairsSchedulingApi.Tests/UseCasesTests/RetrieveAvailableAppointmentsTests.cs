@@ -4,6 +4,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using FluentAssertions;
+    using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using HousingRepairsSchedulingApi.UseCases;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -32,8 +33,14 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
             // Arrange
             var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
 
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = sorCode,
+                LocationId = "locationId",
+            };
+
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute(sorCode, "locationId");
+            Func<Task> act = async () => await systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -50,8 +57,14 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
             // Arrange
             var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
 
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "sorCode",
+                LocationId = locationId,
+            };
+
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute("uprn", locationId);
+            Func<Task> act = async () => await systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -65,8 +78,14 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
             // Arrange
             var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
 
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "sorCode",
+                LocationId = "locationId",
+            };
+
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute("SoR Code", "location Id", null);
+            Func<Task> act = async () => await systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().NotThrowAsync();
@@ -84,10 +103,14 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
         public async void GivenParameters_WhenExecute_ThenGetAvailableAppointmentsGatewayIsCalled()
 #pragma warning restore CA1707
         {
-            const string uprn = "uprn";
-            const string locationId = "locationId";
-            await sytemUndertest.Execute("uprn", "locationId");
-            appointmentsGatewayMock.Verify(x => x.GetAvailableAppointments(uprn, locationId, null), Times.Once);
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "sorCode",
+                LocationId = "locationId", 
+            };
+
+            await sytemUndertest.Execute(request);
+            appointmentsGatewayMock.Verify(x => x.GetAvailableAppointments(request), Times.Once);
         }
     }
 }

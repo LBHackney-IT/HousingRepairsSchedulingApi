@@ -4,6 +4,7 @@ namespace HousingRepairsSchedulingApi.Controllers
     using System.Text.Json;
     using System.Threading.Tasks;
     using Amazon.Lambda.Core;
+    using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.UseCases.Interfaces;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
@@ -32,14 +33,11 @@ namespace HousingRepairsSchedulingApi.Controllers
 
         [HttpGet]
         [Route("AvailableAppointments")]
-        public async Task<IActionResult> AvailableAppointments(
-            [FromQuery] string sorCode,
-            [FromQuery] string locationId,
-            [FromQuery] DateTime? fromDate = null)
+        public async Task<IActionResult> AvailableAppointments([FromQuery] GetAvailableAppointmentsRequest request)
         {
             try
             {
-                var result = await _retrieveAvailableAppointmentsUseCase.Execute(sorCode, locationId, fromDate);
+                var result = await _retrieveAvailableAppointmentsUseCase.Execute(request);
                 return this.Ok(result);
             }
             catch (Exception ex)

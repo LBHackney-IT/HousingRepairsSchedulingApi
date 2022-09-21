@@ -7,6 +7,7 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
 {
     using System;
     using Controllers;
+    using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.UseCases.Interfaces;
     using Microsoft.Extensions.Logging.Abstractions;
     using UseCases;
@@ -32,20 +33,31 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
         [Fact]
         public async Task TestAvailableAppointmentsEndpoint()
         {
-            var result = await this.systemUndertest.AvailableAppointments(SorCode, LocationId);
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = SorCode,
+                LocationId = LocationId
+            };
+
+            var result = await this.systemUndertest.AvailableAppointments(request);
             GetStatusCode(result).Should().Be(200);
-            availableAppointmentsUseCaseMock.Verify(x => x.Execute(SorCode, LocationId, null), Times.Once);
+            availableAppointmentsUseCaseMock.Verify(x => x.Execute(request), Times.Once);
         }
 
 
         [Fact]
         public async Task ReturnsErrorWhenFailsToGetAvailableAppointments()
         {
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = It.IsAny<string>(),
+                LocationId = It.IsAny<string>(),
+            };
 
             const string errorMessage = "An error message";
-            this.availableAppointmentsUseCaseMock.Setup(x => x.Execute(It.IsAny<String>(), It.IsAny<String>(), null)).Throws(new Exception(errorMessage));
+            this.availableAppointmentsUseCaseMock.Setup(x => x.Execute(request)).Throws(new Exception(errorMessage));
 
-            var result = await this.systemUndertest.AvailableAppointments(SorCode, LocationId);
+            var result = await this.systemUndertest.AvailableAppointments(request);
 
             GetStatusCode(result).Should().Be(500);
         }
@@ -67,16 +79,19 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
 #pragma warning restore CA1707
         {
             // Arrange
-            const string sorCode = "sorCode";
-            const string locationId = "locationId";
-            var fromDate = new DateTime(2021, 12, 15);
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "sorCode",
+                LocationId = "locationId",
+                FromDate = new DateTime(2021, 12, 15)
+            };
 
             // Act
-            var result = await this.systemUndertest.AvailableAppointments(sorCode, locationId, fromDate);
+            var result = await this.systemUndertest.AvailableAppointments(request);
 
             // Assert
             GetStatusCode(result).Should().Be(200);
-            availableAppointmentsUseCaseMock.Verify(x => x.Execute(sorCode, locationId, fromDate), Times.Once);
+            availableAppointmentsUseCaseMock.Verify(x => x.Execute(request), Times.Once);
         }
 
         [Fact]

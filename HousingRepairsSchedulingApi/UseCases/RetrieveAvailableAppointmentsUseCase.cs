@@ -7,6 +7,7 @@ namespace HousingRepairsSchedulingApi.UseCases
     using Ardalis.GuardClauses;
     using Domain;
     using HACT.Dtos;
+    using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using HousingRepairsSchedulingApi.UseCases.Interfaces;
     using Microsoft.Extensions.Logging;
@@ -22,14 +23,14 @@ namespace HousingRepairsSchedulingApi.UseCases
             _logger = logger;
         }
 
-        public async Task<IEnumerable<Appointment>> Execute(string sorCode, string locationId, DateTime? fromDate = null)
+        public async Task<IEnumerable<Appointment>> Execute(GetAvailableAppointmentsRequest request)
         {
-            Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
-            Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
+            Guard.Against.NullOrWhiteSpace(request.SorCode, nameof(request.SorCode));
+            Guard.Against.NullOrWhiteSpace(request.LocationId, nameof(request.LocationId));
 
-            var availableAppointments = await _appointmentsGateway.GetAvailableAppointments(sorCode, locationId, fromDate);
+            var availableAppointments = await _appointmentsGateway.GetAvailableAppointments(request);
 
-            _logger.LogInformation("RetrieveAvailableAppointmentsUseCase received {NumberOfAvailableAppointments} from AppointmentGateway for {LocationId}", availableAppointments.Count(), locationId);
+            _logger.LogInformation("RetrieveAvailableAppointmentsUseCase received {NumberOfAvailableAppointments} from AppointmentGateway for {LocationId}", availableAppointments.Count(), request.LocationId);
 
             return availableAppointments.Select(x => x.ToHactAppointment());
         }
