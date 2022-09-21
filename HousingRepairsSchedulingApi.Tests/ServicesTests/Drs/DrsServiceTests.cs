@@ -181,7 +181,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-        public async void GivenInvalidBookingReference_WhenCreatingAnOrder_ThenExceptionIsThrown<T>(string bookingReference) where T : Exception
+        public async void GivenInvalidBookingReference_WhenCreatingAnOrder_ThenExceptionIsThrown<T>(T exception, string bookingReference) where T : Exception
         {
             // Arrange
 
@@ -195,7 +195,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-        public async void GivenInvalidSorCode_WhenCreatingAnOrder_ThenExceptionIsThrown<T>(string sorCode) where T : Exception
+        public async void GivenInvalidSorCode_WhenCreatingAnOrder_ThenExceptionIsThrown<T>(T exception, string sorCode) where T : Exception
         {
             // Arrange
 
@@ -208,7 +208,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-        public async void GivenInvalidLocationId_WhenCreatingAnOrder_ThenExceptionIsThrown<T>(string locationId) where T : Exception
+        public async void GivenInvalidLocationId_WhenCreatingAnOrder_ThenExceptionIsThrown<T>(T exception, string locationId) where T : Exception
         {
             // Arrange
 
@@ -225,6 +225,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
             // Arrange
             var soapResponse = new xmbCreateOrderResponse
             {
+                status = responseStatus.success,
                 theOrder = new order { theBookings = new[] { new booking { bookingId = BookingId } } }
             };
 
@@ -242,7 +243,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-        public async void GivenInvalidBookingReference_WhenSchedulingABooking_ThenExceptionIsThrown<T>(string bookingReference) where T : Exception
+        public async void GivenInvalidBookingReference_WhenSchedulingABooking_ThenExceptionIsThrown<T>(T exception, string bookingReference) where T : Exception
         {
             // Arrange
 

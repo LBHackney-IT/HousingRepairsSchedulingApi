@@ -29,7 +29,7 @@ namespace HousingRepairsSchedulingApi.UseCases
 
             var availableAppointments = await _appointmentsGateway.GetAvailableAppointments(request);
 
-            _logger.LogInformation("RetrieveAvailableAppointmentsUseCase received {NumberOfAvailableAppointments} from AppointmentGateway for {LocationId}", availableAppointments.Count(), locationId);
+            _logger.LogInformation("RetrieveAvailableAppointmentsUseCase received {NumberOfAvailableAppointments} from AppointmentGateway for {LocationId}", availableAppointments.Count(), request.LocationId);
 
             return availableAppointments.Select(x => x.ToHactAppointment());
         }

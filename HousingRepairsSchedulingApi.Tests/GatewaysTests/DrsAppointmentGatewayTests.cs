@@ -18,7 +18,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
     public class DrsAppointmentGatewayTests
     {
-        private Mock<IDrsService> _drsServiceMock = new();
+        private readonly Mock<IDrsService> _drsServiceMock = new();
         private DrsAppointmentGateway _systemUnderTest;
 
         private const int WorkOrderId = 10000047;
@@ -26,7 +26,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         private const int AppointmentSearchTimeSpanInDays = 14;
         private const int AppointmentLeadTimeInDays = 0;
         private const int MaximumNumberOfRequests = 10;
-        private const string BookingReference = "Booking Reference";
+        private const string BookingReference = "bookingReference";
         private const string SorCode = "SOR Code";
         private const string LocationId = "locationId";
 
@@ -41,9 +41,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         }
 
         [Fact]
-#pragma warning disable CA1707
         public void GivenNullDrsServiceParameter_WhenInstantiating_ThenArgumentNullExceptionIsThrown()
-#pragma warning restore CA1707
         {
             // Arrange
 
@@ -123,7 +121,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-        public async void GivenInvalidSorCode_WhenGettingAvailableAppointments_ThenExceptionIsThrown<T>(string sorCode) where T : Exception
+        public async void GivenInvalidSorCode_WhenGettingAvailableAppointments_ThenExceptionIsThrown<T>(T exception, string sorCode) where T : Exception
         {
             // Arrange
             var request = new GetAvailableAppointmentsRequest
@@ -141,7 +139,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-        public async void GivenInvalidLocationId_WhenGettingAvailableAppointments_ThenExceptionIsThrown<T>(string locationId) where T : Exception
+        public async void GivenInvalidLocationId_WhenGettingAvailableAppointments_ThenExceptionIsThrown<T>(T exception, string locationId) where T : Exception
         {
             // Arrange
             var request = new GetAvailableAppointmentsRequest
@@ -509,7 +507,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-        public async void GivenAnInvalidBookingReference_WhenExecute_ThenExceptionIsThrown<T>(string bookingReference) where T : Exception
+        public async void GivenAnInvalidBookingReference_WhenExecute_ThenExceptionIsThrown<T>(T exception, string bookingReference) where T : Exception
         {
             // Arrange
             var request = new BookAppointmentRequest
@@ -522,7 +520,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             };
 
             // Act
-            Func<Task> act = async () => await _systemUnderTest.BookAppointment(request);
+            Func<Task<string>> act = async () => await _systemUnderTest.BookAppointment(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -530,7 +528,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-        public async void GivenAnInvalidSorCode_WhenExecute_ThenExceptionIsThrown<T>(string sorCode) where T : Exception
+        public async void GivenAnInvalidSorCode_WhenExecute_ThenExceptionIsThrown<T>(T exception, string sorCode) where T : Exception
         {
             // Arrange
             var request = new BookAppointmentRequest
@@ -551,7 +549,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-        public async void GivenAnInvalidLocationId_WhenExecute_ThenExceptionIsThrown<T>(string locationId) where T : Exception
+        public async void GivenAnInvalidLocationId_WhenExecute_ThenExceptionIsThrown<T>(T exception, string locationId) where T : Exception
         {
             // Arrange
             var request = new BookAppointmentRequest
@@ -598,17 +596,19 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         public async void GivenValidArguments_WhenExecute_ThenOrderIsReturnedAndScheduleBookingIsCalled()
         {
             // Arrange
-            const int bookingId = 12345;
+            var bookingReference = "10003829";
+
+            var drsResponse = new order { orderId = 863256, theBookings = new booking[] { new booking { bookingId = 12345 } } };
 
             _drsServiceMock
-                .Setup(x => x.CreateOrder(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(bookingId);
+                .Setup(x => x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>()))
+                .ReturnsAsync(drsResponse);
 
             var startDateTime = new DateTime(2022, 05, 01);
 
             var request = new BookAppointmentRequest
             {
-                BookingReference = BookingReference,
+                BookingReference = bookingReference,
                 SorCode = SorCode,
                 LocationId = LocationId,
                 StartDateTime = startDateTime,
@@ -616,7 +616,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             };
 
             var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(request.StartDateTime);
-            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(request.EndDateTime));
+            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(request.EndDateTime);
 
             // Act
             var actual = await _systemUnderTest.BookAppointment(request);
@@ -628,7 +628,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         public static IEnumerable<object[]> InvalidOrderTestData()
         {
-            yield return new object[] { "10003829", new DateTime(2022, 05, 01), (order)null };
+            yield return new object[] { "10003829", new DateTime(2022, 05, 01), (order) null };
             yield return new object[] { "10003829", new DateTime(2022, 05, 01), new order { orderComments = "No bookings in this order" } };
             yield return new object[] { "10003829", new DateTime(2022, 05, 01), new order { theBookings = new booking[] { new booking { bookingId = 0 } } } };
         }
@@ -645,7 +645,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
             var request = new BookAppointmentRequest
             {
-                BookingReference = BookingReference,
+                BookingReference = bookingReference,
                 SorCode = SorCode,
                 LocationId = LocationId,
                 StartDateTime = startDateTime,

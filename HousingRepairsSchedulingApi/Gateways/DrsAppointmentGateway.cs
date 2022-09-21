@@ -89,7 +89,7 @@ namespace HousingRepairsSchedulingApi.Gateways
                 .Take(_requiredNumberOfAppointmentDays)
                 .SelectMany(x => x.Select(y => y));
 
-            _logger.LogInformation("GetAvailableAppointments returned {NumberOfAppointmentSlots} from {NumberOfAppointments} for {LocationId}", appointmentSlots.Count(), numberOfAppointments, locationId);
+            _logger.LogInformation("GetAvailableAppointments returned {NumberOfAppointmentSlots} from {NumberOfAppointments} for {LocationId}", appointmentSlots.Count(), numberOfAppointments, request.LocationId);
 
             return appointmentSlots;
         }
@@ -127,14 +127,9 @@ namespace HousingRepairsSchedulingApi.Gateways
 
             LambdaLogger.Log($"About to BookAppointment for location {request.LocationId}");
 
-            var bookingId = await _drsService.CreateOrder(request.BookingReference, request.SorCode, request.LocationId);
-
-            var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(request.StartDateTime);
-            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(request.EndDateTime);
+            var order = await _drsService.SelectOrder(int.Parse(request.BookingReference), DateTime.Now.AddDays(-30));
 
             _logger.LogInformation($"Appointment times for booking reference {request.BookingReference} - start time is {request.StartDateTime} and end time is {request.EndDateTime}");
-
-            var order = await _drsService.SelectOrder(int.Parse(request.BookingReference), DateTime.Now.AddDays(-30));
 
             if (order == null)
             {
@@ -152,6 +147,9 @@ namespace HousingRepairsSchedulingApi.Gateways
             }
 
             _logger.LogInformation($"Order created successfully for {request.BookingReference}");
+
+            var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(request.StartDateTime);
+            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(request.EndDateTime);
 
             LambdaLogger.Log($"BookAppointment was successful for location {request.LocationId} with reference {request.BookingReference}");
 
