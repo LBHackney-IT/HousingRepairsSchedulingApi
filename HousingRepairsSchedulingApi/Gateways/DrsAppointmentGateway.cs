@@ -6,6 +6,7 @@ namespace HousingRepairsSchedulingApi.Gateways
     using System.Threading.Tasks;
     using Ardalis.GuardClauses;
     using Domain;
+    using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.Exceptions;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using HousingRepairsSchedulingApi.Helpers;
@@ -43,15 +44,12 @@ namespace HousingRepairsSchedulingApi.Gateways
             _logger = logger;
         }
 
-        public async Task<IEnumerable<AppointmentSlot>> GetAvailableAppointments(
-            string sorCode,
-            string locationId,
-            DateTime? fromDate = null)
+        public async Task<IEnumerable<AppointmentSlot>> GetAvailableAppointments(GetAvailableAppointmentsRequest request)
         {
-            Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
-            Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
+            Guard.Against.NullOrWhiteSpace(request.SorCode, nameof(request.SorCode));
+            Guard.Against.NullOrWhiteSpace(request.LocationId, nameof(request.LocationId));
 
-            var earliestDate = fromDate ?? DateTime.Today.AddDays(_appointmentLeadTimeInDays);
+            var earliestDate = request.FromDate ?? DateTime.Today.AddDays(_appointmentLeadTimeInDays);
             var appointmentSlots = Enumerable.Empty<AppointmentSlot>();
 
             var numberOfRequests = 0;
@@ -61,7 +59,7 @@ namespace HousingRepairsSchedulingApi.Gateways
             {
                 numberOfRequests++;
 
-                var appointments = await GetValidAppointments(sorCode, locationId, earliestDate);
+                var appointments = await GetValidAppointments(request.SorCode, request.LocationId, earliestDate);
 
                 numberOfAppointments += appointments.Count();
 
@@ -74,7 +72,7 @@ namespace HousingRepairsSchedulingApi.Gateways
                 .Take(_requiredNumberOfAppointmentDays)
                 .SelectMany(x => x.Select(y => y));
 
-            _logger.LogInformation("GetAvailableAppointments returned {NumberOfAppointmentSlots} from {NumberOfAppointments} for {LocationId}", appointmentSlots.Count(), numberOfAppointments, locationId);
+            _logger.LogInformation("GetAvailableAppointments returned {NumberOfAppointmentSlots} from {NumberOfAppointments} for {LocationId}", appointmentSlots.Count(), numberOfAppointments, request.LocationId);
 
             return appointmentSlots;
         }
@@ -103,47 +101,42 @@ namespace HousingRepairsSchedulingApi.Gateways
             return appointments;
         }
 
-        public async Task<string> BookAppointment(
-            string bookingReference,
-            string sorCode,
-            string locationId,
-            DateTime startDateTime,
-            DateTime endDateTime)
+        public async Task<string> BookAppointment(BookAppointmentRequest request)
         {
-            Guard.Against.NullOrWhiteSpace(bookingReference, nameof(bookingReference));
-            Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
-            Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
-            Guard.Against.OutOfRange(endDateTime, nameof(endDateTime), startDateTime, DateTime.MaxValue);
+            Guard.Against.NullOrWhiteSpace(request.BookingReference, nameof(request.BookingReference));
+            Guard.Against.NullOrWhiteSpace(request.SorCode, nameof(request.SorCode));
+            Guard.Against.NullOrWhiteSpace(request.LocationId, nameof(request.LocationId));
+            Guard.Against.OutOfRange(request.EndDateTime, nameof(request.EndDateTime), request.StartDateTime, DateTime.MaxValue);
 
-            _logger.LogInformation($"Appointment times for booking reference {bookingReference} - start time is {startDateTime} and end time is {endDateTime}");
+            _logger.LogInformation($"Appointment times for booking reference {request.BookingReference} - start time is {request.StartDateTime} and end time is {request.EndDateTime}");
 
-            var order = await _drsService.SelectOrder(int.Parse(bookingReference), DateTime.Now.AddDays(-30));
+            var order = await _drsService.SelectOrder(int.Parse(request.BookingReference), DateTime.Now.AddDays(-30));
 
             if (order == null)
             {
-                throw new DrsException($"The DRS order for booking reference {bookingReference} is null");
+                throw new DrsException($"The DRS order for booking reference {request.BookingReference} is null");
             }
 
             if (order.theBookings == null || order.theBookings.Count() < 1)
             {
-                throw new DrsException($"No valid booking found in DRS order with booking reference {bookingReference}");
+                throw new DrsException($"No valid booking found in DRS order with booking reference {request.BookingReference}");
             }
 
             if (order.theBookings[0].bookingId == 0)
             {
-                throw new DrsException($"Booking ID for DRS order with booking reference {bookingReference} is invalid");
+                throw new DrsException($"Booking ID for DRS order with booking reference {request.BookingReference} is invalid");
             }
 
-            _logger.LogInformation($"Order created successfully for {bookingReference}");
+            _logger.LogInformation($"Order created successfully for {request.BookingReference}");
 
-            var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(startDateTime);
-            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(endDateTime);
+            var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(request.StartDateTime);
+            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(request.EndDateTime);
 
-            _logger.LogInformation($"Converted times for booking reference {bookingReference} - start time is {convertedStartTime} and end time is {convertedEndTime} prior to sending to DRS");
+            _logger.LogInformation($"Converted times for booking reference {request.BookingReference} - start time is {convertedStartTime} and end time is {convertedEndTime} prior to sending to DRS");
 
-            await _drsService.ScheduleBooking(bookingReference, order.theBookings[0].bookingId, convertedStartTime, convertedEndTime);
+            await _drsService.ScheduleBooking(request.BookingReference, order.theBookings[0].bookingId, convertedStartTime, convertedEndTime);
 
-            return bookingReference;
+            return request.BookingReference;
         }
     }
 }

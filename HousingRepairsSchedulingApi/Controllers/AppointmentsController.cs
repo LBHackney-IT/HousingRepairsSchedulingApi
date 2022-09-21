@@ -4,6 +4,7 @@ namespace HousingRepairsSchedulingApi.Controllers
     using System.Text.Json;
     using System.Threading.Tasks;
     using Amazon.Lambda.Core;
+    using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.UseCases.Interfaces;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
@@ -32,14 +33,11 @@ namespace HousingRepairsSchedulingApi.Controllers
 
         [HttpGet]
         [Route("AvailableAppointments")]
-        public async Task<IActionResult> AvailableAppointments(
-            [FromQuery] string sorCode,
-            [FromQuery] string locationId,
-            [FromQuery] DateTime? fromDate = null)
+        public async Task<IActionResult> AvailableAppointments([FromQuery] GetAvailableAppointmentsRequest request)
         {
             try
             {
-                var result = await _retrieveAvailableAppointmentsUseCase.Execute(sorCode, locationId, fromDate);
+                var result = await _retrieveAvailableAppointmentsUseCase.Execute(request);
                 return this.Ok(result);
             }
             catch (Exception ex)
@@ -54,18 +52,13 @@ namespace HousingRepairsSchedulingApi.Controllers
 
         [HttpPost]
         [Route("BookAppointment")]
-        public async Task<IActionResult> BookAppointment(
-            [FromQuery] string bookingReference,
-            [FromQuery] string sorCode,
-            [FromQuery] string locationId,
-            [FromQuery] DateTime startDateTime,
-            [FromQuery] DateTime endDateTime)
+        public async Task<IActionResult> BookAppointment([FromQuery] BookAppointmentRequest request)
         {
             try
             {
-                _logger.LogInformation($"Appointment times (from HousingRepairsOnlineAPI) for booking reference {bookingReference} - start time is {startDateTime} and end time is {endDateTime}.");
+                _logger.LogInformation($"Appointment times (from HousingRepairsOnlineAPI) for booking reference {request.BookingReference} - start time is {request.StartDateTime} and end time is {request.EndDateTime}.");
 
-                var result = await _bookAppointmentUseCase.Execute(bookingReference, sorCode, locationId, startDateTime, endDateTime);
+                var result = await _bookAppointmentUseCase.Execute(request);
 
                 return this.Ok(result);
             }
