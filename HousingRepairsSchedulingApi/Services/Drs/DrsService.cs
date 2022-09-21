@@ -167,7 +167,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                 throw new ArgumentNullException("The bookingId was null");
             }
 
-            return (int)result;
+            return (int) result;
         }
 
         public async Task ScheduleBooking(string bookingReference, int bookingId, DateTime startDateTime, DateTime endDateTime)

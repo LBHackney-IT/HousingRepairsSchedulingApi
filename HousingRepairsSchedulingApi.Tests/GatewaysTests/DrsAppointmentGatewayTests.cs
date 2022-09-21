@@ -718,7 +718,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         public static IEnumerable<object[]> InvalidOrderTestData()
         {
-            yield return new object[] { "10003829", new DateTime(2022, 05, 01), (order)null };
+            yield return new object[] { "10003829", new DateTime(2022, 05, 01), (order) null };
             yield return new object[] { "10003829", new DateTime(2022, 05, 01), new order { orderComments = "No bookings in this order" } };
             yield return new object[] { "10003829", new DateTime(2022, 05, 01), new order { theBookings = new booking[] { new booking { bookingId = 0 } } } };
         }
