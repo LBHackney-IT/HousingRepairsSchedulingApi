@@ -33,13 +33,17 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
         [Fact]
         public async Task TestAvailableAppointmentsEndpoint()
         {
+            // Arrange
             var request = new GetAvailableAppointmentsRequest
             {
                 SorCode = SorCode,
                 LocationId = LocationId
             };
 
+            // Act
             var result = await _systemUndertest.AvailableAppointments(request);
+
+            // Assert
             GetStatusCode(result).Should().Be(200);
             _availableAppointmentsUseCaseMock.Verify(x => x.Execute(request), Times.Once);
         }
@@ -48,6 +52,7 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
         [Fact]
         public async Task ReturnsErrorWhenFailsToGetAvailableAppointments()
         {
+            // Arrange
             var request = new GetAvailableAppointmentsRequest
             {
                 SorCode = It.IsAny<string>(),
@@ -57,14 +62,17 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
             const string errorMessage = "An error message";
             _availableAppointmentsUseCaseMock.Setup(x => x.Execute(request)).Throws(new Exception(errorMessage));
 
+            // Act
             var result = await _systemUndertest.AvailableAppointments(request);
 
+            // Assert
             GetStatusCode(result).Should().Be(500);
         }
 
         [Fact]
         public async Task TestBookAppointmentEndpoint()
         {
+            // Arrange
             var request = new BookAppointmentRequest
             {
                 BookingReference = "bookingReference",
@@ -74,7 +82,10 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
                 EndDateTime = It.IsAny<DateTime>()
             };
 
+            // Act
             var result = await _systemUndertest.BookAppointment(request);
+
+            // Assert
             GetStatusCode(result).Should().Be(200);
         }
 
@@ -100,6 +111,7 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
         [Fact]
         public async Task ReturnsErrorWhenFailsToBookAppointments()
         {
+            // Arrange
             var request = new BookAppointmentRequest
             {
                 BookingReference = "bookingReference",
@@ -115,8 +127,10 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
                 .Setup(x => x.Execute(request))
                 .Throws(new Exception(errorMessage));
 
+            // Act
             var result = await _systemUndertest.BookAppointment(request);
 
+            // Assert
             GetStatusCode(result).Should().Be(500);
         }
     }

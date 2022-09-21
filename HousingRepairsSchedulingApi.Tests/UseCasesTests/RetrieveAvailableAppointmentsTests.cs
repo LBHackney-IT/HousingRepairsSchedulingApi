@@ -13,13 +13,13 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 
     public class RetrieveAvailableAppointmentsTests
     {
-        private readonly RetrieveAvailableAppointmentsUseCase _sytemUndertest;
+        private readonly RetrieveAvailableAppointmentsUseCase _systemUndertest;
         private readonly Mock<IAppointmentsGateway> _appointmentsGatewayMock;
 
         public RetrieveAvailableAppointmentsTests()
         {
             _appointmentsGatewayMock = new Mock<IAppointmentsGateway>();
-            _sytemUndertest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
+            _systemUndertest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
         }
 
         [Theory]
@@ -27,8 +27,6 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
         public async void GivenAnInvalidSorCode_WhenExecute_ThenExceptionIsThrown<T>(T exception, string sorCode) where T : Exception
         {
             // Arrange
-            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
-
             var request = new GetAvailableAppointmentsRequest
             {
                 SorCode = sorCode,
@@ -36,7 +34,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
             };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute(request);
+            Func<Task> act = async () => await _systemUndertest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -47,8 +45,6 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
         public async void GivenAnInvalidLocationId_WhenExecute_ThenExceptionIsThrown<T>(T exception, string locationId) where T : Exception
         {
             // Arrange
-            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
-
             var request = new GetAvailableAppointmentsRequest
             {
                 SorCode = "sorCode",
@@ -56,7 +52,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
             };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute(request);
+            Func<Task> act = async () => await _systemUndertest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -66,8 +62,6 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
         public async void GivenANullFromDate_WhenExecute_ThenNoExceptionIsThrown()
         {
             // Arrange
-            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
-
             var request = new GetAvailableAppointmentsRequest
             {
                 SorCode = "sorCode",
@@ -75,7 +69,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
             };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute(request);
+            Func<Task> act = async () => await _systemUndertest.Execute(request);
 
             // Assert
             await act.Should().NotThrowAsync();
@@ -97,7 +91,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
                 LocationId = "locationId",
             };
 
-            await _sytemUndertest.Execute(request);
+            await _systemUndertest.Execute(request);
 
             _appointmentsGatewayMock.Verify(x => x.GetAvailableAppointments(request), Times.Once);
         }

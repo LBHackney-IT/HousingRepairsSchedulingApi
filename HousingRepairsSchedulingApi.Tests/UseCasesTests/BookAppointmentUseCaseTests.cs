@@ -135,8 +135,8 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
             };
 
             _appointmentsGatewayMock
-                .Setup(x => x.BookAppointment(request)).
-                ReturnsAsync(BookingReference);
+                .Setup(x => x.BookAppointment(request))
+                .ReturnsAsync(BookingReference);
 
 
             // Act

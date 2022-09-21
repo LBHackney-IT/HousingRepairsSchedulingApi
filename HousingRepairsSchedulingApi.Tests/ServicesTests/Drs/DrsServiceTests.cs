@@ -29,18 +29,25 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
         public DrsServiceTests()
         {
             var drsOptionsMock = new Mock<IOptions<DrsOptions>>();
-            drsOptionsMock.Setup(x => x.Value)
-                .Returns(new DrsOptions { Login = "login", Password = "password" });
-
             _soapMock = new Mock<SOAP>();
-            _soapMock.Setup(x => x.openSessionAsync(It.IsAny<openSession>()))
-                .ReturnsAsync(new openSessionResponse
-                {
-                    @return = new xmbOpenSessionResponse { sessionId = "sessionId" }
-                });
+
+
+            var drsMockResponse = new DrsOptions { Login = "login", Password = "password" };
+
+            drsOptionsMock
+                .Setup(x => x.Value)
+                .Returns(drsMockResponse);
+
+            var soapMockResponse = new openSessionResponse
+            {
+                @return = new xmbOpenSessionResponse { sessionId = "sessionId" }
+            };
+
+            _soapMock
+                .Setup(x => x.openSessionAsync(It.IsAny<openSession>()))
+                .ReturnsAsync(soapMockResponse);
 
             _systemUnderTest = new DrsService(_soapMock.Object, drsOptionsMock.Object, new NullLogger<DrsService>());
-
         }
 
         [Fact]
@@ -69,14 +76,16 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
 
         [Theory]
         [MemberData(nameof(UnavailableSlotsTestData))]
-        public async void
-            GivenDrsCheckAvailabilityResponseContainsUnavailableSlots_WhenCheckingAvailability_ThenOnlyAvailableSlotsAreReturned(DateTime searchDate, daySlotsInfo[] daySlots, IEnumerable<AppointmentSlot> expected)
+        public async void GivenDrsCheckAvailabilityResponseContainsUnavailableSlots_WhenCheckingAvailability_ThenOnlyAvailableSlotsAreReturned(DateTime searchDate, daySlotsInfo[] daySlots, IEnumerable<AppointmentSlot> expected)
         {
             // Arrange
+            var soapResponse = new checkAvailabilityResponse(
+                    new xmbCheckAvailabilityResponse { theSlots = daySlots }
+            );
 
-            _soapMock.Setup(x => x.checkAvailabilityAsync(It.IsAny<checkAvailability>()))
-                .ReturnsAsync(new checkAvailabilityResponse(
-                    new xmbCheckAvailabilityResponse { theSlots = daySlots }));
+            _soapMock
+                .Setup(x => x.checkAvailabilityAsync(It.IsAny<checkAvailability>()))
+                .ReturnsAsync(soapResponse);
 
             // Act
             var appointmentSlots = await _systemUnderTest.CheckAvailability(SorCode, LocationId, searchDate);
@@ -163,15 +172,18 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
         }
 
         [Fact]
-        public async void
-            GivenDrsCheckAvailabilityResponseContainsDaysWithNoSlots_WhenCheckingAvailability_ThenArgumentNullExceptionIsNotThrown()
+        public async void GivenDrsCheckAvailabilityResponseContainsDaysWithNoSlots_WhenCheckingAvailability_ThenArgumentNullExceptionIsNotThrown()
         {
             // Arrange
             var dateTime = new DateTime(2022, 1, 19);
 
-            _soapMock.Setup(x => x.checkAvailabilityAsync(It.IsAny<checkAvailability>()))
-                .ReturnsAsync(new checkAvailabilityResponse(
-                    new xmbCheckAvailabilityResponse { theSlots = new[] { new daySlotsInfo { day = dateTime } } }));
+            var soapResponse = new checkAvailabilityResponse(
+                new xmbCheckAvailabilityResponse { theSlots = new[] { new daySlotsInfo { day = dateTime } } }
+            );
+
+            _soapMock
+                .Setup(x => x.checkAvailabilityAsync(It.IsAny<checkAvailability>()))
+                .ReturnsAsync(soapResponse);
 
             // Act
             var appointmentSlots = await _systemUnderTest.CheckAvailability(SorCode, LocationId, dateTime);
@@ -226,12 +238,15 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
         public async void GivenCreateOrderResponse_WhenCreatingAnOrder_ThenBookingIdIsPresentInTheResponse()
         {
             // Arrange
-            this._soapMock.Setup(x => x.createOrderAsync(It.IsAny<createOrder>()))
-                .ReturnsAsync(new createOrderResponse(new xmbCreateOrderResponse
-                {
-                    status = responseStatus.success,
-                    theOrder = new order { theBookings = new[] { new booking { bookingId = BookingId } } }
-                }));
+            var soapResponse = new createOrderResponse(new xmbCreateOrderResponse
+            {
+                status = responseStatus.success,
+                theOrder = new order { theBookings = new[] { new booking { bookingId = BookingId } } }
+            });
+
+            _soapMock
+                .Setup(x => x.createOrderAsync(It.IsAny<createOrder>()))
+                .ReturnsAsync(soapResponse);
 
             // Act
             var actual = await _systemUnderTest.CreateOrder(BookingReference, SorCode, LocationId);
@@ -277,7 +292,9 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
             scheduleBooking request = null;
 
             Expression<Action<SOAP>> schedulingBookingExpression = x => x.scheduleBookingAsync(It.IsAny<scheduleBooking>());
-            _soapMock.Setup(schedulingBookingExpression)
+
+            _soapMock
+                .Setup(schedulingBookingExpression)
                 .Callback<scheduleBooking>(r => request = r);
 
             var startDate = new DateTime(2022, 1, 21);
