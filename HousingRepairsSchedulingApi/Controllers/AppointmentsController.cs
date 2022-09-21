@@ -52,18 +52,13 @@ namespace HousingRepairsSchedulingApi.Controllers
 
         [HttpPost]
         [Route("BookAppointment")]
-        public async Task<IActionResult> BookAppointment(
-            [FromQuery] string bookingReference,
-            [FromQuery] string sorCode,
-            [FromQuery] string locationId,
-            [FromQuery] DateTime startDateTime,
-            [FromQuery] DateTime endDateTime)
+        public async Task<IActionResult> BookAppointment([FromQuery] BookAppointmentRequest request)
         {
             try
             {
-                _logger.LogInformation($"Appointment times (from HousingRepairsOnlineAPI) for booking reference {bookingReference} - start time is {startDateTime} and end time is {endDateTime}.");
+                _logger.LogInformation($"Appointment times (from HousingRepairsOnlineAPI) for booking reference {request.BookingReference} - start time is {request.StartDateTime} and end time is {request.EndDateTime}.");
 
-                var result = await _bookAppointmentUseCase.Execute(bookingReference, sorCode, locationId, startDateTime, endDateTime);
+                var result = await _bookAppointmentUseCase.Execute(request);
 
                 return this.Ok(result);
             }

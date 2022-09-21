@@ -592,10 +592,17 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 #pragma warning restore xUnit1026
         {
             // Arrange
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = bookingReference,
+                SorCode = SorCode,
+                LocationId = LocationId,
+                StartDateTime = It.IsAny<DateTime>(),
+                EndDateTime = It.IsAny<DateTime>()
+            };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.BookAppointment(bookingReference, SorCode, LocationId,
-                It.IsAny<DateTime>(), It.IsAny<DateTime>());
+            Func<Task> act = async () => await systemUnderTest.BookAppointment(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -610,10 +617,17 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 #pragma warning restore xUnit1026
         {
             // Arrange
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = BookingReference,
+                SorCode = sorCode,
+                LocationId = LocationId,
+                StartDateTime = It.IsAny<DateTime>(),
+                EndDateTime = It.IsAny<DateTime>()
+            };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.BookAppointment(BookingReference, sorCode, LocationId,
-                It.IsAny<DateTime>(), It.IsAny<DateTime>());
+            Func<Task> act = async () => await systemUnderTest.BookAppointment(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -628,10 +642,17 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 #pragma warning restore xUnit1026
         {
             // Arrange
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = BookingReference,
+                SorCode = SorCode,
+                LocationId = locationId,
+                StartDateTime = It.IsAny<DateTime>(),
+                EndDateTime = It.IsAny<DateTime>()
+            };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.BookAppointment(BookingReference, SorCode, locationId,
-                It.IsAny<DateTime>(), It.IsAny<DateTime>());
+            Func<Task> act = async () => await systemUnderTest.BookAppointment(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -644,11 +665,19 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         {
             // Arrange
             var startDate = new DateTime(2022, 1, 21);
-            var endDate = startDate.AddDays(-1);
+
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = BookingReference,
+                SorCode = SorCode,
+                LocationId = LocationId,
+                StartDateTime = startDate,
+                EndDateTime = startDate.AddDays(-1)
+            };
 
             // Act
             Func<Task> act = async () =>
-                await systemUnderTest.BookAppointment(BookingReference, SorCode, LocationId, startDate, endDate);
+                await systemUnderTest.BookAppointment(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>();
@@ -660,23 +689,31 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 #pragma warning restore CA1707
         {
             // Arrange
-            var bookingReference = "10003829";
             var startDateTime = new DateTime(2022, 05, 01);
-            var endDateTime = startDateTime.AddDays(1);
-            var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(startDateTime);
-            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(startDateTime.AddDays(1));
+
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = "10003829",
+                SorCode = SorCode,
+                LocationId = LocationId,
+                StartDateTime = startDateTime,
+                EndDateTime = startDateTime.AddDays(1)
+            };
 
             drsServiceMock.Setup(x =>
                 x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
             ).ReturnsAsync(new order { orderId = 863256, theBookings = new booking[] { new booking { bookingId = 12345 } } });
 
             // Act
-            var actual = await systemUnderTest.BookAppointment(bookingReference, SorCode, LocationId,
-                startDateTime, startDateTime.AddDays(1));
+            var actual = await systemUnderTest.BookAppointment(request);
 
             // Assert
-            Assert.Equal(bookingReference, actual);
-            drsServiceMock.Verify(drsServiceMock => drsServiceMock.ScheduleBooking(bookingReference, 12345, convertedStartTime, convertedEndTime), Times.Once);
+            var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(request.StartDateTime);
+            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(request.EndDateTime);
+
+
+            Assert.Equal(request.BookingReference, actual);
+            drsServiceMock.Verify(drsServiceMock => drsServiceMock.ScheduleBooking(request.BookingReference, 12345, convertedStartTime, convertedEndTime), Times.Once);
         }
 
         public static IEnumerable<object[]> InvalidOrderTestData()
@@ -703,9 +740,17 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
             ).ReturnsAsync(orderResponse);
 
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = bookingReference,
+                SorCode = SorCode,
+                LocationId = LocationId,
+                StartDateTime = startDateTime,
+                EndDateTime = startDateTime.AddDays(1)
+            };
+
             // Act
-            var act = async () => await systemUnderTest.BookAppointment(bookingReference, SorCode, LocationId,
-                startDateTime, startDateTime.AddDays(1));
+            var act = async () => await systemUnderTest.BookAppointment(request);
 
             // Assert
             await act.Should().ThrowAsync<DrsException>();

@@ -46,8 +46,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             return orderedAppointments;
         }
 
-        public Task<string> BookAppointment(string bookingReference, string sorCode, string locationId, DateTime startDateTime,
-            DateTime endDateTime) =>
+        public Task<string> BookAppointment(BookAppointmentRequest request) =>
             throw new NotImplementedException();
     }
 }

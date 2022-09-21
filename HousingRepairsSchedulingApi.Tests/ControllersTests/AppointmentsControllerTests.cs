@@ -65,11 +65,16 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
         [Fact]
         public async Task TestBookAppointmentEndpoint()
         {
-            const string bookingReference = "bookingReference";
-            var startDateTime = It.IsAny<DateTime>();
-            var endDateTime = It.IsAny<DateTime>();
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = "bookingReference",
+                SorCode = SorCode,
+                LocationId = LocationId,
+                StartDateTime = It.IsAny<DateTime>(),
+                EndDateTime = It.IsAny<DateTime>()
+            };
 
-            var result = await this.systemUndertest.BookAppointment(bookingReference, SorCode, LocationId, startDateTime, endDateTime);
+            var result = await this.systemUndertest.BookAppointment(request);
             GetStatusCode(result).Should().Be(200);
         }
 
@@ -97,14 +102,22 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
         [Fact]
         public async Task ReturnsErrorWhenFailsToBookAppointments()
         {
-            const string bookingReference = "bookingReference";
-            var startDateTime = It.IsAny<DateTime>();
-            var endDateTime = It.IsAny<DateTime>();
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = "bookingReference",
+                SorCode = SorCode,
+                LocationId = LocationId,
+                StartDateTime = It.IsAny<DateTime>(),
+                EndDateTime = It.IsAny<DateTime>()
+            };
 
             const string errorMessage = "An error message";
-            this.bookAppointmentUseCaseMock.Setup(x => x.Execute(It.IsAny<String>(), It.IsAny<String>(), It.IsAny<String>(), It.IsAny<DateTime>(), It.IsAny<DateTime>())).Throws(new Exception(errorMessage));
 
-            var result = await this.systemUndertest.BookAppointment(bookingReference, SorCode, LocationId, startDateTime, endDateTime);
+            this.bookAppointmentUseCaseMock
+                .Setup(x => x.Execute(request))
+                .Throws(new Exception(errorMessage));
+
+            var result = await this.systemUndertest.BookAppointment(request);
 
             GetStatusCode(result).Should().Be(500);
         }

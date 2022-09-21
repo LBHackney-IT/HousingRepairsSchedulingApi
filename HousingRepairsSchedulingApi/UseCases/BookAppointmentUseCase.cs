@@ -3,6 +3,7 @@ namespace HousingRepairsSchedulingApi.UseCases
     using System;
     using System.Threading.Tasks;
     using Ardalis.GuardClauses;
+    using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.Gateways.Interfaces;
     using HousingRepairsSchedulingApi.UseCases.Interfaces;
 
@@ -15,19 +16,14 @@ namespace HousingRepairsSchedulingApi.UseCases
             _appointmentsGateway = appointmentsGateway;
         }
 
-        public Task<string> Execute(
-            string bookingReference,
-            string sorCode,
-            string locationId,
-            DateTime startDateTime,
-            DateTime endDateTime)
+        public Task<string> Execute(BookAppointmentRequest request)
         {
-            Guard.Against.NullOrWhiteSpace(bookingReference, nameof(bookingReference));
-            Guard.Against.NullOrWhiteSpace(sorCode, nameof(sorCode));
-            Guard.Against.NullOrWhiteSpace(locationId, nameof(locationId));
-            Guard.Against.OutOfRange(endDateTime, nameof(endDateTime), startDateTime, DateTime.MaxValue);
+            Guard.Against.NullOrWhiteSpace(request.BookingReference, nameof(request.BookingReference));
+            Guard.Against.NullOrWhiteSpace(request.SorCode, nameof(request.SorCode));
+            Guard.Against.NullOrWhiteSpace(request.LocationId, nameof(request.LocationId));
+            Guard.Against.OutOfRange(request.EndDateTime, nameof(request.EndDateTime), request.StartDateTime, DateTime.MaxValue);
 
-            return _appointmentsGateway.BookAppointment(bookingReference, sorCode, locationId, startDateTime, endDateTime);
+            return _appointmentsGateway.BookAppointment(request);
         }
     }
 }
