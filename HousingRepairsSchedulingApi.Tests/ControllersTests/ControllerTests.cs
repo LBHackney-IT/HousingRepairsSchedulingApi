@@ -5,10 +5,9 @@ namespace HousingRepairsSchedulingApi.Tests
 {
     public class ControllerTests
     {
-
         protected static T GetResultData<T>(IActionResult result)
         {
-            return (T)(result as ObjectResult)?.Value;
+            return (T) (result as ObjectResult)?.Value;
         }
 
         protected static int? GetStatusCode(IActionResult result)

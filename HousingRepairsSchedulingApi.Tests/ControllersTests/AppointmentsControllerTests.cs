@@ -16,38 +16,43 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
     {
         private const string SorCode = "SOR Code";
         private const string LocationId = "locationId";
-        private AppointmentsController systemUndertest;
-        private Mock<IRetrieveAvailableAppointmentsUseCase> availableAppointmentsUseCaseMock;
-        private Mock<IBookAppointmentUseCase> bookAppointmentUseCaseMock;
+        private readonly AppointmentsController _systemUndertest;
+        private readonly Mock<IRetrieveAvailableAppointmentsUseCase> _availableAppointmentsUseCaseMock;
+        private readonly Mock<IBookAppointmentUseCase> _bookAppointmentUseCaseMock;
 
         public AppointmentsControllerTests()
         {
-            availableAppointmentsUseCaseMock = new Mock<IRetrieveAvailableAppointmentsUseCase>();
-            bookAppointmentUseCaseMock = new Mock<IBookAppointmentUseCase>();
-            this.systemUndertest = new AppointmentsController(
-                availableAppointmentsUseCaseMock.Object,
-                bookAppointmentUseCaseMock.Object,
+            _availableAppointmentsUseCaseMock = new Mock<IRetrieveAvailableAppointmentsUseCase>();
+            _bookAppointmentUseCaseMock = new Mock<IBookAppointmentUseCase>();
+            _systemUndertest = new AppointmentsController(
+                _availableAppointmentsUseCaseMock.Object,
+                _bookAppointmentUseCaseMock.Object,
                 new NullLogger<AppointmentsController>());
         }
 
         [Fact]
         public async Task TestAvailableAppointmentsEndpoint()
         {
+            // Arrange
             var request = new GetAvailableAppointmentsRequest
             {
                 SorCode = SorCode,
                 LocationId = LocationId
             };
 
-            var result = await this.systemUndertest.AvailableAppointments(request);
+            // Act
+            var result = await _systemUndertest.AvailableAppointments(request);
+
+            // Assert
             GetStatusCode(result).Should().Be(200);
-            availableAppointmentsUseCaseMock.Verify(x => x.Execute(request), Times.Once);
+            _availableAppointmentsUseCaseMock.Verify(x => x.Execute(request), Times.Once);
         }
 
 
         [Fact]
         public async Task ReturnsErrorWhenFailsToGetAvailableAppointments()
         {
+            // Arrange
             var request = new GetAvailableAppointmentsRequest
             {
                 SorCode = It.IsAny<string>(),
@@ -55,16 +60,19 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
             };
 
             const string errorMessage = "An error message";
-            this.availableAppointmentsUseCaseMock.Setup(x => x.Execute(request)).Throws(new Exception(errorMessage));
+            _availableAppointmentsUseCaseMock.Setup(x => x.Execute(request)).Throws(new Exception(errorMessage));
 
-            var result = await this.systemUndertest.AvailableAppointments(request);
+            // Act
+            var result = await _systemUndertest.AvailableAppointments(request);
 
+            // Assert
             GetStatusCode(result).Should().Be(500);
         }
 
         [Fact]
         public async Task TestBookAppointmentEndpoint()
         {
+            // Arrange
             var request = new BookAppointmentRequest
             {
                 BookingReference = "bookingReference",
@@ -74,14 +82,15 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
                 EndDateTime = It.IsAny<DateTime>()
             };
 
-            var result = await this.systemUndertest.BookAppointment(request);
+            // Act
+            var result = await _systemUndertest.BookAppointment(request);
+
+            // Assert
             GetStatusCode(result).Should().Be(200);
         }
 
         [Fact]
-#pragma warning disable CA1707
         public async Task GivenAFromDate_WhenRequestingAvailableAppointment_ThenResultsAreReturned()
-#pragma warning restore CA1707
         {
             // Arrange
             var request = new GetAvailableAppointmentsRequest
@@ -92,16 +101,17 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
             };
 
             // Act
-            var result = await this.systemUndertest.AvailableAppointments(request);
+            var result = await _systemUndertest.AvailableAppointments(request);
 
             // Assert
             GetStatusCode(result).Should().Be(200);
-            availableAppointmentsUseCaseMock.Verify(x => x.Execute(request), Times.Once);
+            _availableAppointmentsUseCaseMock.Verify(x => x.Execute(request), Times.Once);
         }
 
         [Fact]
         public async Task ReturnsErrorWhenFailsToBookAppointments()
         {
+            // Arrange
             var request = new BookAppointmentRequest
             {
                 BookingReference = "bookingReference",
@@ -113,12 +123,14 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
 
             const string errorMessage = "An error message";
 
-            this.bookAppointmentUseCaseMock
+            _bookAppointmentUseCaseMock
                 .Setup(x => x.Execute(request))
                 .Throws(new Exception(errorMessage));
 
-            var result = await this.systemUndertest.BookAppointment(request);
+            // Act
+            var result = await _systemUndertest.BookAppointment(request);
 
+            // Assert
             GetStatusCode(result).Should().Be(500);
         }
     }
