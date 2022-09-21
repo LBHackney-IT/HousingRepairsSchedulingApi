@@ -7,8 +7,8 @@ namespace HousingRepairsSchedulingApi.Controllers
     using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.UseCases.Interfaces;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
     using Sentry;
-    using UseCases;
     using Constants = HousingRepairsSchedulingApi.Constants;
 
     [ApiController]
@@ -18,13 +18,16 @@ namespace HousingRepairsSchedulingApi.Controllers
     {
         private readonly IRetrieveAvailableAppointmentsUseCase _retrieveAvailableAppointmentsUseCase;
         private readonly IBookAppointmentUseCase _bookAppointmentUseCase;
+        private readonly ILogger<AppointmentsController> _logger;
 
         public AppointmentsController(
             IRetrieveAvailableAppointmentsUseCase retrieveAvailableAppointmentsUseCase,
-            IBookAppointmentUseCase bookAppointmentUseCase)
+            IBookAppointmentUseCase bookAppointmentUseCase,
+            ILogger<AppointmentsController> logger)
         {
             _retrieveAvailableAppointmentsUseCase = retrieveAvailableAppointmentsUseCase;
             _bookAppointmentUseCase = bookAppointmentUseCase;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -52,6 +55,8 @@ namespace HousingRepairsSchedulingApi.Controllers
         {
             try
             {
+                _logger.LogInformation($"Appointment times (from HousingRepairsOnlineAPI) for booking reference {request.BookingReference} - start time is {request.StartDateTime} and end time is {request.EndDateTime}.");
+
                 var result = await _bookAppointmentUseCase.Execute(request);
 
                 return Ok(result);

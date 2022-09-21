@@ -9,7 +9,7 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
     using Controllers;
     using HousingRepairsSchedulingApi.Boundary.Requests;
     using HousingRepairsSchedulingApi.UseCases.Interfaces;
-    using UseCases;
+    using Microsoft.Extensions.Logging.Abstractions;
 
     public class AppointmentsControllerTests : ControllerTests
     {
@@ -27,7 +27,8 @@ namespace HousingRepairsSchedulingApi.Tests.ControllersTests
 
             _systemUndertest = new AppointmentsController(
                 _availableAppointmentsUseCaseMock.Object,
-                _bookAppointmentUseCaseMock.Object);
+                _bookAppointmentUseCaseMock.Object,
+                new NullLogger<AppointmentsController>());
         }
 
         [Fact]

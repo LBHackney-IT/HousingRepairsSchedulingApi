@@ -8,6 +8,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
     using System.Threading.Tasks;
     using Domain;
     using FluentAssertions;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Microsoft.Extensions.Options;
     using Moq;
     using Services.Drs;
@@ -38,7 +39,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
                 .Setup(x => x.openSessionAsync(It.IsAny<openSession>()))
                 .ReturnsAsync(new openSessionResponse { @return = new xmbOpenSessionResponse { sessionId = "sessionId" } });
 
-            _systemUnderTest = new DrsService(_soapMock.Object, drsOptionsMock.Object);
+            _systemUnderTest = new DrsService(_soapMock.Object, drsOptionsMock.Object, new NullLogger<DrsService>());
         }
 
         [Fact]
@@ -47,7 +48,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
             // Arrange
 
             // Act
-            Func<DrsService> act = () => new DrsService(null, It.IsAny<IOptions<DrsOptions>>());
+            Func<DrsService> act = () => new DrsService(null, It.IsAny<IOptions<DrsOptions>>(), new NullLogger<DrsService>());
 
             // Assert
             act.Should().ThrowExactly<ArgumentNullException>().WithParameterName("drsSoapClient");
@@ -59,7 +60,7 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
             // Arrange
 
             // Act
-            Func<DrsService> act = () => new DrsService(new Mock<SOAP>().Object, null);
+            Func<DrsService> act = () => new DrsService(new Mock<SOAP>().Object, null, new NullLogger<DrsService>());
 
             // Assert
             act.Should().ThrowExactly<ArgumentNullException>().WithParameterName("drsOptions");
@@ -236,7 +237,6 @@ namespace HousingRepairsSchedulingApi.Tests.ServicesTests.Drs
 
             // Assert
             Assert.Equal(BookingId, actual);
-
         }
 
 

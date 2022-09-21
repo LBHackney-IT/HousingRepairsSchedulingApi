@@ -9,6 +9,9 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
     using FluentAssertions;
     using Gateways;
     using HousingRepairsSchedulingApi.Boundary.Requests;
+    using HousingRepairsSchedulingApi.Exceptions;
+    using HousingRepairsSchedulingApi.Helpers;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Services.Drs;
     using Xunit;
@@ -18,6 +21,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         private Mock<IDrsService> _drsServiceMock = new();
         private DrsAppointmentGateway _systemUnderTest;
 
+        private const int WorkOrderId = 10000047;
         private const int RequiredNumberOfAppointmentDays = 5;
         private const int AppointmentSearchTimeSpanInDays = 14;
         private const int AppointmentLeadTimeInDays = 0;
@@ -32,7 +36,8 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 _drsServiceMock.Object,
                 RequiredNumberOfAppointmentDays,
                 AppointmentSearchTimeSpanInDays,
-                AppointmentLeadTimeInDays, MaximumNumberOfRequests);
+                AppointmentLeadTimeInDays, MaximumNumberOfRequests,
+                new NullLogger<DrsAppointmentGateway>());
         }
 
         [Fact]
@@ -48,7 +53,8 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 default,
                 default,
                 default,
-                default);
+                default,
+                new NullLogger<DrsAppointmentGateway>());
 
             // Assert
             act.Should().ThrowExactly<ArgumentNullException>();
@@ -62,7 +68,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             // Arrange
 
             // Act
-            Func<DrsAppointmentGateway> act = () => new DrsAppointmentGateway(_drsServiceMock.Object, invalidRequiredNumberOfAppointments, default, default, default);
+            Func<DrsAppointmentGateway> act = () => new DrsAppointmentGateway(_drsServiceMock.Object, invalidRequiredNumberOfAppointments, default, default, default, new NullLogger<DrsAppointmentGateway>());
 
             // Assert
             act.Should().ThrowExactly<ArgumentException>();
@@ -74,7 +80,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             // Arrange
 
             // Act
-            Func<DrsAppointmentGateway> act = () => new DrsAppointmentGateway(_drsServiceMock.Object, 1, 1, -1, default);
+            Func<DrsAppointmentGateway> act = () => new DrsAppointmentGateway(_drsServiceMock.Object, 1, 1, -1, default, new NullLogger<DrsAppointmentGateway>());
 
             // Assert
             act.Should().ThrowExactly<ArgumentException>();
@@ -88,7 +94,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             // Arrange
 
             // Act
-            Func<DrsAppointmentGateway> act = () => new DrsAppointmentGateway(_drsServiceMock.Object, 1, invalidAppointmentSearchTimeSpanInDays, default, default);
+            Func<DrsAppointmentGateway> act = () => new DrsAppointmentGateway(_drsServiceMock.Object, 1, invalidAppointmentSearchTimeSpanInDays, default, default, new NullLogger<DrsAppointmentGateway>());
 
             // Assert
             act.Should().ThrowExactly<ArgumentException>();
@@ -102,7 +108,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             // Arrange
 
             // Act
-            Func<DrsAppointmentGateway> act = () => new DrsAppointmentGateway(_drsServiceMock.Object, 1, 1, default, invalidMaximumNumberOfRequests);
+            Func<DrsAppointmentGateway> act = () => new DrsAppointmentGateway(_drsServiceMock.Object, 1, 1, default, invalidMaximumNumberOfRequests, new NullLogger<DrsAppointmentGateway>());
 
             // Assert
             act.Should().ThrowExactly<ArgumentException>().WithParameterName("maximumNumberOfRequests");
@@ -350,7 +356,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         public async void GivenDrsServiceHasAvailableAppointmentsThatAreNotRequired_WhenGettingAvailableAppointments_ThenOnlyValidAppointmentsAreReturned()
         {
             // Arrange
-            _systemUnderTest = new DrsAppointmentGateway(_drsServiceMock.Object, 1, AppointmentSearchTimeSpanInDays, AppointmentLeadTimeInDays, int.MaxValue);
+            _systemUnderTest = new DrsAppointmentGateway(_drsServiceMock.Object, 1, AppointmentSearchTimeSpanInDays, AppointmentLeadTimeInDays, int.MaxValue, new NullLogger<DrsAppointmentGateway>());
 
             _drsServiceMock
                 .SetupSequence(x => x.CheckAvailability(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateTime>()))
@@ -388,7 +394,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         public async void GivenDrsServiceHasAvailableAppointmentsThatAreNotRequiredDueToTimeZoneOffset_WhenGettingAvailableAppointments_ThenTheyAreFilteredOutOfAppointmentsThatAreReturned(AppointmentSlot unrequiredAppointmentSlot)
         {
             // Arrange
-            _systemUnderTest = new DrsAppointmentGateway(_drsServiceMock.Object, 1, AppointmentSearchTimeSpanInDays, AppointmentLeadTimeInDays, 1);
+            _systemUnderTest = new DrsAppointmentGateway(_drsServiceMock.Object, 1, AppointmentSearchTimeSpanInDays, AppointmentLeadTimeInDays, 1, new NullLogger<DrsAppointmentGateway>());
 
             _drsServiceMock
                 .SetupSequence(x => x.CheckAvailability(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateTime>()))
@@ -589,7 +595,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         }
 
         [Fact]
-        public async void GivenValidArguments_WhenExecute_ThenBookingReferenceIsReturned()
+        public async void GivenValidArguments_WhenExecute_ThenOrderIsReturnedAndScheduleBookingIsCalled()
         {
             // Arrange
             const int bookingId = 12345;
@@ -609,11 +615,47 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 EndDateTime = startDateTime.AddDays(1),
             };
 
+            var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(request.StartDateTime);
+            var convertedEndTime = DrsHelpers.ConvertToDrsTimeZone(request.EndDateTime));
+
             // Act
             var actual = await _systemUnderTest.BookAppointment(request);
 
             // Assert
-            Assert.Equal(BookingReference, actual);
+            Assert.Equal(request.BookingReference, actual);
+            _drsServiceMock.Verify(drsServiceMock => drsServiceMock.ScheduleBooking(request.BookingReference, 12345, convertedStartTime, convertedEndTime), Times.Once);
+        }
+
+        public static IEnumerable<object[]> InvalidOrderTestData()
+        {
+            yield return new object[] { "10003829", new DateTime(2022, 05, 01), (order)null };
+            yield return new object[] { "10003829", new DateTime(2022, 05, 01), new order { orderComments = "No bookings in this order" } };
+            yield return new object[] { "10003829", new DateTime(2022, 05, 01), new order { theBookings = new booking[] { new booking { bookingId = 0 } } } };
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidOrderTestData))]
+
+        public async void GivenInvalidOrderIsReturned_WhenSelectingAnOrder_ThenExceptionIsThrown(string bookingReference, DateTime startDateTime, order orderResponse)
+        {
+            // Arrange
+            _drsServiceMock.Setup(x =>
+                x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
+            ).ReturnsAsync(orderResponse);
+
+            var request = new BookAppointmentRequest
+            {
+                BookingReference = BookingReference,
+                SorCode = SorCode,
+                LocationId = LocationId,
+                StartDateTime = startDateTime,
+                EndDateTime = startDateTime.AddDays(1),
+            };
+            // Act
+            var act = async () => await _systemUnderTest.BookAppointment(request);
+
+            // Assert
+            await act.Should().ThrowAsync<DrsException>();
         }
     }
 }

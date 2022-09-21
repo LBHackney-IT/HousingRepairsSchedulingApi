@@ -1,15 +1,16 @@
+using HousingRepairsSchedulingApi.Boundary.Requests;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
-using HousingRepairsSchedulingApi.Boundary.Requests;
 using HousingRepairsSchedulingApi.Gateways.Interfaces;
 using HousingRepairsSchedulingApi.UseCases;
 using Moq;
 using Xunit;
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 {
-
     public class RetrieveAvailableAppointmentsTests
     {
         private readonly RetrieveAvailableAppointmentsUseCase _sytemUndertest;
@@ -18,7 +19,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
         public RetrieveAvailableAppointmentsTests()
         {
             _appointmentsGatewayMock = new Mock<IAppointmentsGateway>();
-            _sytemUndertest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object);
+            _sytemUndertest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
         }
 
         [Theory]
@@ -26,7 +27,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
         public async void GivenAnInvalidSorCode_WhenExecute_ThenExceptionIsThrown<T>(string sorCode) where T : Exception
         {
             // Arrange
-            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object);
+            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
 
             var request = new GetAvailableAppointmentsRequest
             {
@@ -46,7 +47,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
         public async void GivenAnInvalidLocationId_WhenExecute_ThenExceptionIsThrown<T>(string locationId) where T : Exception
         {
             // Arrange
-            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object);
+            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
 
             var request = new GetAvailableAppointmentsRequest
             {
@@ -65,7 +66,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
         public async void GivenANullFromDate_WhenExecute_ThenNoExceptionIsThrown()
         {
             // Arrange
-            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object);
+            var systemUnderTest = new RetrieveAvailableAppointmentsUseCase(_appointmentsGatewayMock.Object, new NullLogger<RetrieveAvailableAppointmentsUseCase>());
 
             var request = new GetAvailableAppointmentsRequest
             {
