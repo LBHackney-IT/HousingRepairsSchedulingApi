@@ -1,17 +1,17 @@
+using System;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Amazon.Lambda.Core;
+using HousingRepairsSchedulingApi.Boundary.Requests;
+using HousingRepairsSchedulingApi.UseCases.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Sentry;
+using HousingRepairsSchedulingApi.UseCases;
+using Constants = HousingRepairsSchedulingApi.Constants;
+
 namespace HousingRepairsSchedulingApi.Controllers
 {
-    using System;
-    using System.Text.Json;
-    using System.Threading.Tasks;
-    using Amazon.Lambda.Core;
-    using HousingRepairsSchedulingApi.Boundary.Requests;
-    using HousingRepairsSchedulingApi.UseCases.Interfaces;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Logging;
-    using Sentry;
-    using UseCases;
-    using Constants = HousingRepairsSchedulingApi.Constants;
-
     [ApiController]
     [Route($"{Constants.ApiV1RoutePrefix}[controller]")]
     [ApiVersion("1.0")]
@@ -38,7 +38,7 @@ namespace HousingRepairsSchedulingApi.Controllers
             try
             {
                 var result = await _retrieveAvailableAppointmentsUseCase.Execute(request);
-                return this.Ok(result);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -60,7 +60,7 @@ namespace HousingRepairsSchedulingApi.Controllers
 
                 var result = await _bookAppointmentUseCase.Execute(request);
 
-                return this.Ok(result);
+                return Ok(result);
             }
             catch (Exception ex)
             {

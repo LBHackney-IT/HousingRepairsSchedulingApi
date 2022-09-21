@@ -5,7 +5,7 @@ namespace HousingRepairsSchedulingApi.Exceptions
     public class DrsException : Exception
     {
         public DrsException() { }
-        public DrsException(string errorMessage) => this.ErrorMessage = errorMessage;
+        public DrsException(string errorMessage) => ErrorMessage = errorMessage;
         public string ErrorMessage { get; set; }
     }
 }

@@ -18,8 +18,8 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
     public class DrsAppointmentGatewayTests
     {
-        private Mock<IDrsService> drsServiceMock = new();
-        private DrsAppointmentGateway systemUnderTest;
+        private readonly Mock<IDrsService> _drsServiceMock = new Mock<IDrsService>();
+        private DrsAppointmentGateway _systemUnderTest;
         private const int WorkOrderId = 10000047;
         private const int RequiredNumberOfAppointmentDays = 5;
         private const int AppointmentSearchTimeSpanInDays = 14;
@@ -31,8 +31,8 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         public DrsAppointmentGatewayTests()
         {
-            systemUnderTest = new DrsAppointmentGateway(
-                this.drsServiceMock.Object,
+            _systemUnderTest = new DrsAppointmentGateway(
+                _drsServiceMock.Object,
                 RequiredNumberOfAppointmentDays,
                 AppointmentSearchTimeSpanInDays,
                 AppointmentLeadTimeInDays, MaximumNumberOfRequests,
@@ -40,9 +40,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         }
 
         [Fact]
-#pragma warning disable CA1707
         public void GivenNullDrsServiceParameter_WhenInstantiating_ThenArgumentNullExceptionIsThrown()
-#pragma warning restore CA1707
         {
             // Arrange
 
@@ -62,15 +60,13 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         [Theory]
         [InlineData(0)]
         [InlineData(-1)]
-#pragma warning disable CA1707
         public void GivenInvalidRequiredNumberOfAppointmentsParameter_WhenInstantiating_ThenArgumentExceptionIsThrown(int invalidRequiredNumberOfAppointments)
-#pragma warning restore CA1707
         {
             // Arrange
 
             // Act
             Func<DrsAppointmentGateway> act = () => new DrsAppointmentGateway(
-                this.drsServiceMock.Object,
+                _drsServiceMock.Object,
                 invalidRequiredNumberOfAppointments,
                 default,
                 default,
@@ -83,15 +79,13 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         }
 
         [Fact]
-#pragma warning disable CA1707
         public void GivenInvalidAppointmentLeadTimeInDaysParameter_WhenInstantiating_ThenArgumentExceptionIsThrown()
-#pragma warning restore CA1707
         {
             // Arrange
 
             // Act
             Func<DrsAppointmentGateway> act = () => new DrsAppointmentGateway(
-                this.drsServiceMock.Object,
+                _drsServiceMock.Object,
                 1,
                 1,
                 -1,
@@ -105,15 +99,13 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         [Theory]
         [InlineData(0)]
         [InlineData(-1)]
-#pragma warning disable CA1707
         public void GivenInvalidAppointmentSearchTimeSpanInDaysParameter_WhenInstantiating_ThenArgumentExceptionIsThrown(int invalidAppointmentSearchTimeSpanInDays)
-#pragma warning restore CA1707
         {
             // Arrange
 
             // Act
             Func<DrsAppointmentGateway> act = () => new DrsAppointmentGateway(
-                this.drsServiceMock.Object,
+                _drsServiceMock.Object,
                 1,
                 invalidAppointmentSearchTimeSpanInDays,
                 default,
@@ -127,15 +119,13 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         [Theory]
         [InlineData(0)]
         [InlineData(-1)]
-#pragma warning disable CA1707
         public void GivenInvalidMaximumNumberOfRequestsParameter_WhenInstantiating_ThenArgumentExceptionIsThrown(int invalidMaximumNumberOfRequests)
-#pragma warning restore CA1707
         {
             // Arrange
 
             // Act
             Func<DrsAppointmentGateway> act = () => new DrsAppointmentGateway(
-                this.drsServiceMock.Object,
+                _drsServiceMock.Object,
                 1,
                 1,
                 default,
@@ -155,11 +145,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-#pragma warning disable xUnit1026
-#pragma warning disable CA1707
         public async void GivenInvalidSorCode_WhenGettingAvailableAppointments_ThenExceptionIsThrown<T>(T exception, string sorCode) where T : Exception
-#pragma warning restore CA1707
-#pragma warning restore xUnit1026
         {
             // Arrange
             var request = new GetAvailableAppointmentsRequest
@@ -169,7 +155,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.GetAvailableAppointments(request);
+            Func<Task> act = async () => await _systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -177,11 +163,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-#pragma warning disable xUnit1026
-#pragma warning disable CA1707
         public async void GivenInvalidLocationId_WhenGettingAvailableAppointments_ThenExceptionIsThrown<T>(T exception, string locationId) where T : Exception
-#pragma warning restore CA1707
-#pragma warning restore xUnit1026
         {
             // Arrange
             var request = new GetAvailableAppointmentsRequest
@@ -191,16 +173,14 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.GetAvailableAppointments(request);
+            Func<Task> act = async () => await _systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
         }
 
         [Fact]
-#pragma warning disable CA1707
         public async void GivenNullFromDate_WhenGettingAvailableAppointments_ThenNoExceptionIsThrown()
-#pragma warning restore CA1707
         {
             // Arrange
             var request = new GetAvailableAppointmentsRequest
@@ -209,12 +189,12 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 LocationId = "locationId"
             };
 
-            drsServiceMock.Setup(x => x.CheckAvailability(It.IsAny<string>(),
+            _drsServiceMock.Setup(x => x.CheckAvailability(It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<DateTime>())).ReturnsAsync(CreateAppointmentsForSequentialDays(new DateTime(2022, 1, 17), 5));
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.GetAvailableAppointments(request);
+            Func<Task> act = async () => await _systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             await act.Should().NotThrowAsync<NullReferenceException>();
@@ -224,9 +204,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         [MemberData(nameof(FiveDaysOfAvailableAppointmentsSingleAppointmentPerDayTestData))]
         [MemberData(nameof(FiveDaysOfAvailableAppointmentsMultipleAppointmentsPerDayTestData))]
         [MemberData(nameof(MoreThanFiveDaysOfAvailableAppointmentsTestData))]
-#pragma warning disable CA1707
         public async void GivenDrsServiceHasFiveOrMoreDaysOfAvailableAppointments_WhenGettingAvailableAppointments_ThenFiveDaysOfAppointmentsAreReturned(IEnumerable<IEnumerable<AppointmentSlot>> appointmentReturnSequence)
-#pragma warning restore CA1707
         {
             // Arrange
             var request = new GetAvailableAppointmentsRequest
@@ -235,7 +213,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 LocationId = "locationId"
             };
 
-            var setupSequentialResult = drsServiceMock.SetupSequence(x => x.CheckAvailability(
+            var setupSequentialResult = _drsServiceMock.SetupSequence(x => x.CheckAvailability(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<DateTime>()));
@@ -246,7 +224,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             }
 
             // Act
-            var actualAppointments = await systemUnderTest.GetAvailableAppointments(request);
+            var actualAppointments = await _systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             Assert.Equal(RequiredNumberOfAppointmentDays, actualAppointments.Select(x => x.StartTime.Date).Distinct().Count());
@@ -399,9 +377,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         }
 
         [Fact]
-#pragma warning disable CA1707
         public async void GivenDrsServiceHasAvailableAppointmentsThatAreNotRequired_WhenGettingAvailableAppointments_ThenOnlyValidAppointmentsAreReturned()
-#pragma warning restore CA1707
         {
             // Arrange
             var request = new GetAvailableAppointmentsRequest
@@ -410,14 +386,14 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 LocationId = "locationId",
             };
 
-            systemUnderTest = new DrsAppointmentGateway(
-                this.drsServiceMock.Object,
+            _systemUnderTest = new DrsAppointmentGateway(
+                _drsServiceMock.Object,
                 1,
                 AppointmentSearchTimeSpanInDays,
                 AppointmentLeadTimeInDays, int.MaxValue,
                 new NullLogger<DrsAppointmentGateway>());
 
-            drsServiceMock.SetupSequence(x => x.CheckAvailability(
+            _drsServiceMock.SetupSequence(x => x.CheckAvailability(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<DateTime>()))
@@ -438,7 +414,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 };
 
             // Act
-            var actualAppointments = await systemUnderTest.GetAvailableAppointments(request);
+            var actualAppointments = await _systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             actualAppointments.Should().BeEquivalentTo(expected);
@@ -446,9 +422,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Theory]
         [MemberData(nameof(TimeZoneOffsetTestData))]
-#pragma warning disable CA1707
         public async void GivenDrsServiceHasAvailableAppointmentsThatAreNotRequiredDueToTimeZoneOffset_WhenGettingAvailableAppointments_ThenTheyAreFilteredOutOfAppointmentsThatAreReturned(AppointmentSlot unrequiredAppointmentSlot)
-#pragma warning restore CA1707
         {
             // Arrange
             var request = new GetAvailableAppointmentsRequest
@@ -457,21 +431,21 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 LocationId = "locationId"
             };
 
-            systemUnderTest = new DrsAppointmentGateway(
-                this.drsServiceMock.Object,
+            _systemUnderTest = new DrsAppointmentGateway(
+                _drsServiceMock.Object,
                 1,
                 AppointmentSearchTimeSpanInDays,
                 AppointmentLeadTimeInDays, 1,
                 new NullLogger<DrsAppointmentGateway>());
 
-            drsServiceMock.SetupSequence(x => x.CheckAvailability(
+            _drsServiceMock.SetupSequence(x => x.CheckAvailability(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<DateTime>()))
                 .ReturnsAsync(new[] { unrequiredAppointmentSlot });
 
             // Act
-            var actualAppointments = await systemUnderTest.GetAvailableAppointments(request);
+            var actualAppointments = await _systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
             actualAppointments.Should().BeEmpty();
@@ -499,9 +473,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
         }
 
         [Fact]
-#pragma warning disable CA1707
         public async void GivenDrsServiceRequiresMultipleRequests_WhenGettingAvailableAppointments_ThenCorrectTimeSpanIncrementApplied()
-#pragma warning restore CA1707
         {
             // Arrange
             var request = new GetAvailableAppointmentsRequest
@@ -511,12 +483,12 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 FromDate = new DateTime(2022, 1, 17)
             };
 
-            drsServiceMock.Setup(x => x.CheckAvailability(
+            _drsServiceMock.Setup(x => x.CheckAvailability(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     new DateTime(2022, 1, 17)))
                 .ReturnsAsync(CreateAppointmentsForSequentialDays(new DateTime(2022, 1, 17), RequiredNumberOfAppointmentDays - 2));
-            drsServiceMock.Setup(x => x.CheckAvailability(
+            _drsServiceMock.Setup(x => x.CheckAvailability(
                         It.IsAny<string>(),
                         It.IsAny<string>(),
                         new DateTime(2022, 1, 31)))
@@ -524,10 +496,10 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                     RequiredNumberOfAppointmentDays - (RequiredNumberOfAppointmentDays - 2)));
 
             // Act
-            _ = await systemUnderTest.GetAvailableAppointments(request);
+            _ = await _systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
-            drsServiceMock.VerifyAll();
+            _drsServiceMock.VerifyAll();
         }
 
         [Fact]
@@ -542,10 +514,10 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             };
 
             // Act
-            _ = await systemUnderTest.GetAvailableAppointments(request);
+            _ = await _systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
-            drsServiceMock.Verify(x => x.CheckAvailability(
+            _drsServiceMock.Verify(x => x.CheckAvailability(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<DateTime>()), Times.Exactly(10));
@@ -566,7 +538,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<DateTime>());
-            drsServiceMock.SetupSequence(expression)
+            _drsServiceMock.SetupSequence(expression)
                 .ReturnsAsync(Enumerable.Empty<AppointmentSlot>())
                 .ReturnsAsync(Enumerable.Empty<AppointmentSlot>())
                 .ReturnsAsync(Enumerable.Empty<AppointmentSlot>())
@@ -574,10 +546,10 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 .ReturnsAsync(CreateAppointmentsForSequentialDays(new DateTime(2022, 1, 17), 5));
 
             // Act
-            _ = await systemUnderTest.GetAvailableAppointments(request);
+            _ = await _systemUnderTest.GetAvailableAppointments(request);
 
             // Assert
-            drsServiceMock.Verify(x => x.CheckAvailability(
+            _drsServiceMock.Verify(x => x.CheckAvailability(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<DateTime>()), Times.AtMost(10));
@@ -585,11 +557,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-#pragma warning disable xUnit1026
-#pragma warning disable CA1707
         public async void GivenAnInvalidBookingReference_WhenExecute_ThenExceptionIsThrown<T>(T exception, string bookingReference) where T : Exception
-#pragma warning restore CA1707
-#pragma warning restore xUnit1026
         {
             // Arrange
             var request = new BookAppointmentRequest
@@ -602,7 +570,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.BookAppointment(request);
+            Func<Task> act = async () => await _systemUnderTest.BookAppointment(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -610,11 +578,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-#pragma warning disable xUnit1026
-#pragma warning disable CA1707
         public async void GivenAnInvalidSorCode_WhenExecute_ThenExceptionIsThrown<T>(T exception, string sorCode) where T : Exception
-#pragma warning restore CA1707
-#pragma warning restore xUnit1026
         {
             // Arrange
             var request = new BookAppointmentRequest
@@ -627,7 +591,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.BookAppointment(request);
+            Func<Task> act = async () => await _systemUnderTest.BookAppointment(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -635,11 +599,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-#pragma warning disable xUnit1026
-#pragma warning disable CA1707
         public async void GivenAnInvalidLocationId_WhenExecute_ThenExceptionIsThrown<T>(T exception, string locationId) where T : Exception
-#pragma warning restore CA1707
-#pragma warning restore xUnit1026
         {
             // Arrange
             var request = new BookAppointmentRequest
@@ -652,16 +612,14 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.BookAppointment(request);
+            Func<Task> act = async () => await _systemUnderTest.BookAppointment(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
         }
 
         [Fact]
-#pragma warning disable CA1707
         public async void GivenAnEndDateEarlierThanTheStartDate_WhenExecute_ThenInvalidExceptionIsThrown()
-#pragma warning restore CA1707
         {
             // Arrange
             var startDate = new DateTime(2022, 1, 21);
@@ -677,16 +635,14 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
             // Act
             Func<Task> act = async () =>
-                await systemUnderTest.BookAppointment(request);
+                await _systemUnderTest.BookAppointment(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>();
         }
 
         [Fact]
-#pragma warning disable CA1707
         public async void GivenValidArguments_WhenExecute_ThenOrderIsReturnedAndScheduleBookingIsCalled()
-#pragma warning restore CA1707
         {
             // Arrange
             var startDateTime = new DateTime(2022, 05, 01);
@@ -700,12 +656,12 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 EndDateTime = startDateTime.AddDays(1)
             };
 
-            drsServiceMock.Setup(x =>
+            _drsServiceMock.Setup(x =>
                 x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
             ).ReturnsAsync(new order { orderId = 863256, theBookings = new booking[] { new booking { bookingId = 12345 } } });
 
             // Act
-            var actual = await systemUnderTest.BookAppointment(request);
+            var actual = await _systemUnderTest.BookAppointment(request);
 
             // Assert
             var convertedStartTime = DrsHelpers.ConvertToDrsTimeZone(request.StartDateTime);
@@ -713,7 +669,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
 
             Assert.Equal(request.BookingReference, actual);
-            drsServiceMock.Verify(drsServiceMock => drsServiceMock.ScheduleBooking(request.BookingReference, 12345, convertedStartTime, convertedEndTime), Times.Once);
+            _drsServiceMock.Verify(drsServiceMock => drsServiceMock.ScheduleBooking(request.BookingReference, 12345, convertedStartTime, convertedEndTime), Times.Once);
         }
 
         public static IEnumerable<object[]> InvalidOrderTestData()
@@ -725,18 +681,14 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
 
         [Theory]
         [MemberData(nameof(InvalidOrderTestData))]
-#pragma warning disable xUnit1026
-#pragma warning disable CA1707
         public async void GivenInvalidOrderIsReturned_WhenSelectingAnOrder_ThenExceptionIsThrown(
             string bookingReference,
             DateTime startDateTime,
             order orderResponse
             )
-#pragma warning restore CA1707
-#pragma warning restore xUnit1026
         {
             // Arrange
-            drsServiceMock.Setup(x =>
+            _drsServiceMock.Setup(x =>
                 x.SelectOrder(It.IsAny<int>(), It.IsAny<DateTime?>())
             ).ReturnsAsync(orderResponse);
 
@@ -750,7 +702,7 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
             };
 
             // Act
-            var act = async () => await systemUnderTest.BookAppointment(request);
+            var act = async () => await _systemUnderTest.BookAppointment(request);
 
             // Assert
             await act.Should().ThrowAsync<DrsException>();

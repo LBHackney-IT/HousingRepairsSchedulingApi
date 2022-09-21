@@ -17,22 +17,18 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
         private const string SorCode = "SOR Code";
         private const string LocationId = "locationId";
 
-        private BookAppointmentUseCase systemUnderTest;
-        private Mock<IAppointmentsGateway> appointmentsGatewayMock;
+        private readonly BookAppointmentUseCase _systemUnderTest;
+        private readonly Mock<IAppointmentsGateway> _appointmentsGatewayMock;
 
         public BookAppointmentUseCaseTests()
         {
-            appointmentsGatewayMock = new Mock<IAppointmentsGateway>();
-            systemUnderTest = new BookAppointmentUseCase(appointmentsGatewayMock.Object);
+            _appointmentsGatewayMock = new Mock<IAppointmentsGateway>();
+            _systemUnderTest = new BookAppointmentUseCase(_appointmentsGatewayMock.Object);
         }
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-#pragma warning disable xUnit1026
-#pragma warning disable CA1707
         public async void GivenAnInvalidBookingReference_WhenExecute_ThenExceptionIsThrown<T>(T exception, string bookingReference) where T : Exception
-#pragma warning restore CA1707
-#pragma warning restore xUnit1026
         {
             // Arrange
             var request = new BookAppointmentRequest
@@ -45,7 +41,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
             };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute(request);
+            Func<Task> act = async () => await _systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -53,11 +49,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-#pragma warning disable xUnit1026
-#pragma warning disable CA1707
         public async void GivenAnInvalidSorCode_WhenExecute_ThenExceptionIsThrown<T>(T exception, string sorCode) where T : Exception
-#pragma warning restore CA1707
-#pragma warning restore xUnit1026
         {
             // Arrange
             var request = new BookAppointmentRequest
@@ -70,7 +62,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
             };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute(request);
+            Func<Task> act = async () => await _systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
@@ -78,11 +70,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
-#pragma warning disable xUnit1026
-#pragma warning disable CA1707
         public async void GivenAnInvalidLocationId_WhenExecute_ThenExceptionIsThrown<T>(T exception, string locationId) where T : Exception
-#pragma warning restore CA1707
-#pragma warning restore xUnit1026
         {
             // Arrange
             var request = new BookAppointmentRequest
@@ -95,16 +83,14 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
             };
 
             // Act
-            Func<Task> act = async () => await systemUnderTest.Execute(request);
+            Func<Task> act = async () => await _systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<T>();
         }
 
         [Fact]
-#pragma warning disable CA1707
         public async void GivenAnEndDateEarlierThanTheStartDate_WhenExecute_ThenInvalidExceptionIsThrown()
-#pragma warning restore CA1707
         {
             // Arrange
             var startDate = new DateTime(2022, 1, 21);
@@ -120,7 +106,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
 
             // Act
             Func<Task> act = async () =>
-                await systemUnderTest.Execute(request);
+                await _systemUnderTest.Execute(request);
 
             // Assert
             await act.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>();
@@ -134,9 +120,7 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
         }
 
         [Fact]
-#pragma warning disable CA1707
         public async void GivenValidArguments_WhenExecute_ThenBookingIdIsReturned()
-#pragma warning restore CA1707
         {
             // Arrange
             var startDateTime = It.IsAny<DateTime>();
@@ -150,13 +134,13 @@ namespace HousingRepairsSchedulingApi.Tests.UseCasesTests
                 EndDateTime = startDateTime.AddDays(1)
             };
 
-            this.appointmentsGatewayMock
+            _appointmentsGatewayMock
                 .Setup(x => x.BookAppointment(request)).
                 ReturnsAsync(BookingReference);
 
 
             // Act
-            var actual = await systemUnderTest.Execute(request);
+            var actual = await _systemUnderTest.Execute(request);
 
             // Assert
             Assert.Equal(BookingReference, actual);
