@@ -142,21 +142,7 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                 _logger.LogInformation("createOrderAsync returned an invalid response for {LocationId} ", locationId);
             }
 
-            LambdaLogger.Log($"Successfully called createOrderAsync with {bookingReference}. createOrderResponse: {createOrderResponse}");
-
-            LambdaLogger.Log($"'createOrderResponse' for booking reference {bookingReference}" + ((createOrderResponse == null) ? "is null" : "is not null"));
-
-            LambdaLogger.Log($"'createOrderResponse.@return' for booking reference {bookingReference}" + ((createOrderResponse?.@return == null) ? "is null" : "is not null"));
-
-            LambdaLogger.Log($"'createOrderResponse.@return.theOrder.theBookings[0].bookingId' for booking reference {bookingReference}: {createOrderResponse?.@return?.theOrder?.theBookings?[0]?.bookingId}");
-
-            LambdaLogger.Log($"Output from'createOrderResponse.@return.theOrder.theBookings' arrayfor booking reference {bookingReference}. Result: {createOrderResponse?.@return?.theOrder?.theBookings}");
-
-            LambdaLogger.Log($"Attempting to JSON Serialize 'createOrderResponse.@return.theOrder.theBookings[0]' for booking reference {bookingReference}. Result: {JsonSerializer.Serialize(createOrderResponse?.@return?.theOrder?.theBookings?[0])}");
-
-            LambdaLogger.Log($"Primary Order Number from 'createOrderResponse.@return.theOrder.primaryOrderNumber' for booking reference {bookingReference}. Result: {createOrderResponse?.@return?.theOrder?.primaryOrderNumber}");
-
-            LambdaLogger.Log($"Contract from 'createOrderResponse.@return.theOrder.theBookings[0].contract' for booking reference {bookingReference}. Result: {createOrderResponse?.@return?.theOrder?.theBookings?[0]?.contract}");
+            _logger.LogInformation("Successfully called createOrderAsync with {BookingReference}. CreateOrderResponse: {CreateOrderResponse}", bookingReference, createOrderResponse);
 
             var result = createOrderResponse?.@return?.theOrder?.theBookings?[0]?.bookingId;
 
@@ -195,8 +181,6 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                     assignedEndSpecified = true
                 }
             };
-
-            _logger.LogInformation($"scheduleBooking object for booking reference {bookingReference}: {JsonSerializer.Serialize(scheduleBooking)}");
 
             _ = await _drsSoapClient.scheduleBookingAsync(new scheduleBooking(scheduleBooking));
         }
@@ -241,8 +225,6 @@ namespace HousingRepairsSchedulingApi.Services.Drs
                     }
                 }
             };
-
-            _logger.LogInformation("Session ID is {SessionId} prior to DRS selecting order {WorkOrderId}", selectOrder.selectOrder1.sessionId, workOrderId);
 
             _logger.LogInformation("DRS selecting order {WorkOrderId} {request}", workOrderId, selectOrder);
 
