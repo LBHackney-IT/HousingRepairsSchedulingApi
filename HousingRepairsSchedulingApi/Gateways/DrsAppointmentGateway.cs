@@ -67,9 +67,13 @@ namespace HousingRepairsSchedulingApi.Gateways
                 earliestDate = earliestDate.AddDays(_appointmentSearchTimeSpanInDays);
             }
 
+            // 60 day cutoff
+            var latestAppointmentDate = DateTime.Today.AddDays(60);
+
             appointmentSlots = appointmentSlots
                 .GroupBy(x => x.StartTime.Date)
                 .Take(_requiredNumberOfAppointmentDays)
+                .Where(x => x.Key <= latestAppointmentDate)
                 .SelectMany(x => x.Select(y => y));
 
             _logger.LogInformation("GetAvailableAppointments returned {NumberOfAppointmentSlots} from {NumberOfAppointments} for {LocationId}", appointmentSlots.Count(), numberOfAppointments, request.LocationId);
