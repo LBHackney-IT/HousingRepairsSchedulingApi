@@ -73,12 +73,17 @@ namespace HousingRepairsSchedulingApi.Gateways
             appointmentSlots = appointmentSlots
                 .GroupBy(x => x.StartTime.Date)
                 .Take(_requiredNumberOfAppointmentDays)
-                .Where(x => x.Key <= latestAppointmentDate)
+                .Where(x => AppointmentWithin60Days(x, latestAppointmentDate))
                 .SelectMany(x => x.Select(y => y));
 
             _logger.LogInformation("GetAvailableAppointments returned {NumberOfAppointmentSlots} from {NumberOfAppointments} for {LocationId}", appointmentSlots.Count(), numberOfAppointments, request.LocationId);
 
             return appointmentSlots;
+        }
+
+        private static bool AppointmentWithin60Days(IGrouping<DateTime, AppointmentSlot> x, DateTime latestAppointmentDate)
+        {
+            return x.Key <= latestAppointmentDate;
         }
 
         private async Task<IEnumerable<AppointmentSlot>> GetValidAppointments(string sorCode, string locationId, DateTime earliestDate)
