@@ -555,6 +555,51 @@ namespace HousingRepairsSchedulingApi.Tests.GatewaysTests
                 It.IsAny<DateTime>()), Times.AtMost(10));
         }
 
+
+        [Fact]
+        public async void GetAvailableAppointments_WhenCalled_DoesntReturnAppointmentsLaterThan60Days()
+        {
+            // Arrange
+            var request = new GetAvailableAppointmentsRequest
+            {
+                SorCode = "sorCode",
+                LocationId = "locationId"
+            };
+
+            var latestAppointmentDate = DateTime.Today.AddDays(60);
+
+            Expression<Func<IDrsService, Task<IEnumerable<AppointmentSlot>>>> expression = x => x.CheckAvailability(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<DateTime>());
+
+            var drsResponse = new List<AppointmentSlot>
+            {
+                new AppointmentSlot { StartTime = latestAppointmentDate.AddDays(-1), EndTime = latestAppointmentDate.AddDays(-1) },
+                new AppointmentSlot { StartTime = latestAppointmentDate.AddDays(0), EndTime = latestAppointmentDate.AddDays(0) },
+                new AppointmentSlot { StartTime = latestAppointmentDate.AddDays(1), EndTime = latestAppointmentDate.AddDays(1) }
+            };
+
+            _drsServiceMock.SetupSequence(expression)
+                .ReturnsAsync(drsResponse)
+                .ReturnsAsync(Enumerable.Empty<AppointmentSlot>())
+                .ReturnsAsync(Enumerable.Empty<AppointmentSlot>())
+                .ReturnsAsync(Enumerable.Empty<AppointmentSlot>())
+                .ReturnsAsync(Enumerable.Empty<AppointmentSlot>())
+                .ReturnsAsync(Enumerable.Empty<AppointmentSlot>())
+                .ReturnsAsync(Enumerable.Empty<AppointmentSlot>())
+                .ReturnsAsync(Enumerable.Empty<AppointmentSlot>())
+                .ReturnsAsync(Enumerable.Empty<AppointmentSlot>())
+                .ReturnsAsync(Enumerable.Empty<AppointmentSlot>());
+
+            // Act
+            var response = await _systemUnderTest.GetAvailableAppointments(request);
+
+            // Assert
+            response.Should().HaveCount(2);
+            response.Should().NotContain(x => x.StartTime > latestAppointmentDate);
+        }
+
         [Theory]
         [MemberData(nameof(InvalidArgumentTestData))]
         public async void GivenAnInvalidBookingReference_WhenExecute_ThenExceptionIsThrown<T>(T exception, string bookingReference) where T : Exception
