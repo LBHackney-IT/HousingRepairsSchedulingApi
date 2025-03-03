@@ -116,7 +116,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - authenticate-nuget
+      # - authenticate-nuget
       - run:
           name: build
           command: dotnet build HousingRepairsSchedulingApi
@@ -200,7 +200,6 @@ workflows:
       - check-code-formatting
       - build-and-test:
           context: api-nuget-token-context
-        
       - assume-role-staging:
           context: api-assume-role-housing-staging-context
           requires:
