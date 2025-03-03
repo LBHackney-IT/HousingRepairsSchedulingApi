@@ -9,13 +9,13 @@ orbs:
 executors:
   docker-python:
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.7
   docker-terraform:
     docker:
       - image: "hashicorp/terraform:light"
   docker-dotnet:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0
+      - image: mcr.microsoft.com/dotnet/sdk:8.0
 
 references:
   workspace_root: &workspace_root "~"
@@ -46,7 +46,7 @@ commands:
         default: $HACKNEY_NUGET_USERNAME
       hackney-nuget-password:
         type: string
-        default: $HACKNEY_PACKAGES_TOKEN
+        default: $LBHPACKAGESTOKEN
     steps:
       - run:
           name: Add Nuget Source
@@ -63,7 +63,7 @@ commands:
       - run:
           name: Install Node.js
           command: |
-            curl -sL https://deb.nodesource.com/setup_14.x | bash -
+            curl -sL https://deb.nodesource.com/setup_20.x | bash -
             apt-get update && apt-get install -y nodejs
       - run:
           name: Install serverless CLI
@@ -78,7 +78,7 @@ commands:
           name: Deploy lambda
           command: |
             cd ./HousingRepairsSchedulingApi/
-            sls deploy --stage <<parameters.stage>> --conceal
+            npx --yes serverless@^4 deploy --stage <<parameters.stage>> --conceal
 
   terraform-init-then-apply:
     description: "Initializes and applies terraform configuration"
@@ -200,7 +200,6 @@ workflows:
       - check-code-formatting
       - build-and-test:
           context: api-nuget-token-context
-        
       - assume-role-staging:
           context: api-assume-role-housing-staging-context
           requires:
@@ -216,7 +215,9 @@ workflows:
             branches:
               only: main
       - deploy-to-staging:
-          context: api-nuget-token-context
+          context:
+            - api-nuget-token-context
+            - "Serverless Framework"
           requires:
             - assume-role-staging
             - terraform-init-and-apply-to-staging
@@ -241,7 +242,9 @@ workflows:
             branches:
               only: main
       - deploy-to-production:
-          context: api-nuget-token-context
+          context:
+            - api-nuget-token-context
+            - "Serverless Framework"
           requires:
             - permit-production-release
             - assume-role-production
