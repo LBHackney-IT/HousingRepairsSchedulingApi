@@ -46,7 +46,7 @@ commands:
         default: $HACKNEY_NUGET_USERNAME
       hackney-nuget-password:
         type: string
-        default: $HACKNEY_PACKAGES_TOKEN
+        default: $LBHPACKAGESTOKEN
     steps:
       - run:
           name: Add Nuget Source
@@ -116,7 +116,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      # - authenticate-nuget
+      - authenticate-nuget
       - run:
           name: build
           command: dotnet build HousingRepairsSchedulingApi
