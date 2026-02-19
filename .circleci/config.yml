@@ -1,9 +1,6 @@
 version: 2.1
 
-
 orbs:
-  aws-ecr: circleci/aws-ecr@3.0.0
-  aws-cli: circleci/aws-cli@0.1.9
   aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
 
 executors:
@@ -101,154 +98,34 @@ commands:
             terraform apply -auto-approve
 
 jobs:
-  check-code-formatting:
-    executor: docker-dotnet
-    steps:
-      - checkout
-      - run:
-          name: Install dotnet format
-          command: dotnet tool install dotnet-format --tool-path ./dotnet-format-local/
-      - run:
-          name: Run formatter check
-          command: ./dotnet-format-local/dotnet-format --check
-  build-and-test:
-    executor: docker-dotnet
-    steps:
-      - checkout
-      - setup_remote_docker
-      - authenticate-nuget
-      - run:
-          name: build
-          command: dotnet build HousingRepairsSchedulingApi
-      - run:
-          name: Run tests
-          command: dotnet test
-  deploy-to-development:
-    executor: docker-dotnet
-    steps:
-      - authenticate-nuget
-      - deploy-lambda:
-          stage: "development"
-  assume-role-development:
-    executor: docker-python
-    steps:
-      - assume-role-and-persist-workspace:
-          aws-account: $AWS_ACCOUNT_DEVELOPMENT
-  deploy-to-staging:
-    executor: docker-dotnet
-    steps:
-      - authenticate-nuget
-      - deploy-lambda:
-          stage: "staging"
-  assume-role-staging:
-    executor: docker-python
-    steps:
-      - assume-role-and-persist-workspace:
-          aws-account: $AWS_ACCOUNT_STAGING
-  deploy-to-production:
+  deploy-to-dr:
     executor: docker-dotnet
     steps:
       - authenticate-nuget
       - deploy-lambda:
           stage: "production"
-  assume-role-production:
+  assume-role-dr:
     executor: docker-python
     steps:
       - assume-role-and-persist-workspace:
-          aws-account: $AWS_ACCOUNT_PRODUCTION
-  terraform-init-and-apply-to-development:
-    executor: docker-terraform
-    steps:
-      - terraform-init-then-apply:
-          environment: "development"
-  terraform-init-and-apply-to-staging:
-    executor: docker-terraform
-    steps:
-      - terraform-init-then-apply:
-          environment: "staging"
-  terraform-init-and-apply-to-production:
+          aws-account: $AWS_ACCOUNT_DISASTER_RECOVERY
+  terraform-init-and-apply-to-dr:
     executor: docker-terraform
     steps:
       - terraform-init-then-apply:
           environment: "production"
+          
 workflows:
-  # check-and-deploy-development:
-  #   jobs:
-  #     - check-code-formatting:
-  #         context: api-nuget-token-context
-  #     - build-and-test:
-  #         context: api-nuget-token-context
-  #     - assume-role-development:
-  #         context: api-assume-role-housing-development-context
-  #         requires:
-  #           - build-and-test
-  #         filters:
-  #           branches:
-  #             only: development
-  #     - terraform-init-and-apply-to-development:
-  #         requires:
-  #           - assume-role-development
-  #         filters:
-  #           branches:
-  #             only: development
-  #     - deploy-to-development:
-  #         requires:
-  #           - assume-role-development
-  #           - terraform-init-and-apply-to-development
-  check-and-deploy-staging-and-production:
+  deploy-dr:
     jobs:
-      - check-code-formatting
-      - build-and-test:
-          context: api-nuget-token-context
-      - assume-role-staging:
-          context: api-assume-role-housing-staging-context
+      - assume-role-dr:
+          context: api-assume-role-disaster-recovery-context
+      - terraform-init-and-apply-to-dr:
           requires:
-            - build-and-test
-            - check-code-formatting
-          filters:
-            branches:
-              only: main
-      - terraform-init-and-apply-to-staging:
-          requires:
-            - assume-role-staging
-          filters:
-            branches:
-              only: main
-      - deploy-to-staging:
+            - assume-role-dr
+      - deploy-to-dr:
           context:
             - api-nuget-token-context
             - "Serverless Framework"
           requires:
-            - assume-role-staging
-            - terraform-init-and-apply-to-staging
-          filters:
-            branches:
-              only: main
-      - permit-production-release:
-          type: approval
-          requires:
-            - deploy-to-staging
-      - assume-role-production:
-          context: api-assume-role-housing-production-context
-          requires:
-            - permit-production-release
-          filters:
-            branches:
-              only: main
-      - terraform-init-and-apply-to-production:
-          requires:
-            - assume-role-production
-          filters:
-            branches:
-              only: main
-      - deploy-to-production:
-          context:
-            - api-nuget-token-context
-            - "Serverless Framework"
-          requires:
-            - permit-production-release
-            - assume-role-production
-            - terraform-init-and-apply-to-production
-          filters:
-            branches:
-              only: main
+            - terraform-init-and-apply-to-dr
