@@ -36,20 +36,29 @@ commands:
           root: *workspace_root
           paths:
             - .aws
-  authenticate-nuget:
+
+  terraform-init-then-destroy:
+    description: "Initializes and destroys terraform infrastructure"
     parameters:
-      hackney-nuget-username:
+      environment:
         type: string
-        default: $HACKNEY_NUGET_USERNAME
-      hackney-nuget-password:
-        type: string
-        default: $LBHPACKAGESTOKEN
     steps:
+      - *attach_workspace
+      - checkout
       - run:
-          name: Add Nuget Source
-          command: dotnet nuget add source --username <<parameters.hackney-nuget-username>> --password  <<parameters.hackney-nuget-password>>  --store-password-in-clear-text --name github "https://nuget.pkg.github.com/LBHackney-IT/index.json"
-  deploy-lambda:
-    description: "Deploys API via Serverless"
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform get -update=true
+            terraform init
+          name: get and init
+      - run:
+          name: destroy
+          command: |
+            cd ./terraform/<<parameters.environment>>/
+            terraform destroy -auto-approve
+
+  remove-lambda:
+    description: "Removes API via Serverless"
     parameters:
       stage:
         type: string
@@ -66,66 +75,41 @@ commands:
           name: Install serverless CLI
           command: npm i -g serverless
       - run:
-          name: Build lambda
+          name: Remove lambda
           command: |
             cd ./HousingRepairsSchedulingApi/
-            chmod +x ./build.sh
-            ./build.sh
-      - run:
-          name: Deploy lambda
-          command: |
-            cd ./HousingRepairsSchedulingApi/
-            npx --yes serverless@^4 deploy --stage <<parameters.stage>> --conceal
-
-  terraform-init-then-apply:
-    description: "Initializes and applies terraform configuration"
-    parameters:
-      environment:
-        type: string
-    steps:
-      - *attach_workspace
-      - checkout
-      - run:
-          command: |
-            cd ./terraform/<<parameters.environment>>/
-            terraform get -update=true
-            terraform init
-          name: get and init
-      - run:
-          name: apply
-          command: |
-            cd ./terraform/<<parameters.environment>>/
-            terraform apply -auto-approve
+            npx --yes serverless@^4 remove --stage <<parameters.stage>> --conceal
 
 jobs:
-  deploy-to-dr:
-    executor: docker-dotnet
-    steps:
-      - authenticate-nuget
-      - deploy-lambda:
-          stage: "production"
   assume-role-dr:
     executor: docker-python
     steps:
       - assume-role-and-persist-workspace:
           aws-account: $AWS_ACCOUNT_DISASTER_RECOVERY
-  terraform-init-and-apply-to-dr:
+
+  terraform-destroy-dr:
     executor: docker-terraform
     steps:
-      - terraform-init-then-apply:
+      - terraform-init-then-destroy:
           environment: "production"
-          
+
+  remove-lambda-dr:
+    executor: docker-dotnet
+    steps:
+      - remove-lambda:
+          stage: "production"
+
 workflows:
-  deploy-dr:
+  teardown-dr:
     jobs:
       - assume-role-dr:
           context: api-assume-role-disaster-recovery-context
-      - terraform-init-and-apply-to-dr:
+      - terraform-destroy-dr:
           requires:
             - assume-role-dr
-      - deploy-to-dr:
+      - remove-lambda-dr:
           context:
             - api-nuget-token-context
             - "Serverless Framework"
           requires:
-            - terraform-init-and-apply-to-dr
+            - terraform-destroy-dr
