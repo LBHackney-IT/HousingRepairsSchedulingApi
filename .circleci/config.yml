@@ -78,7 +78,7 @@ commands:
           name: Remove lambda
           command: |
             cd ./HousingRepairsSchedulingApi/
-            npx --yes serverless@^4 remove --stage <<parameters.stage>> --conceal
+            npx --yes serverless@^4 remove --stage <<parameters.stage>> 
 
 jobs:
   assume-role-dr:
