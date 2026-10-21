@@ -163,15 +163,15 @@ workflows:
           requires:
             - build-and-test
             - check-code-formatting
-          filters:
-            branches:
-              only: main
+          # filters:
+          #   branches:
+          #     only: main
       - terraform-init-and-apply-to-staging:
           requires:
             - assume-role-staging
-          filters:
-            branches:
-              only: main
+          # filters:
+          #   branches:
+          #     only: main
       - deploy-to-staging:
           context:
             - api-nuget-token-context
@@ -179,34 +179,34 @@ workflows:
           requires:
             - assume-role-staging
             - terraform-init-and-apply-to-staging
-          filters:
-            branches:
-              only: main
-      - permit-production-release:
-          type: approval
-          requires:
-            - deploy-to-staging
-      - assume-role-production:
-          context: api-assume-role-housing-production-context
-          requires:
-            - permit-production-release
-          filters:
-            branches:
-              only: main
-      - terraform-init-and-apply-to-production:
-          requires:
-            - assume-role-production
-          filters:
-            branches:
-              only: main
-      - deploy-to-production:
-          context:
-            - api-nuget-token-context
-            - "Serverless Framework"
-          requires:
-            - permit-production-release
-            - assume-role-production
-            - terraform-init-and-apply-to-production
-          filters:
-            branches:
-              only: main
+          # filters:
+          #   branches:
+          #     only: main
+      # - permit-production-release:
+      #     type: approval
+      #     requires:
+      #       - deploy-to-staging
+      # - assume-role-production:
+      #     context: api-assume-role-housing-production-context
+      #     requires:
+      #       - permit-production-release
+      #     filters:
+      #       branches:
+      #         only: main
+      # - terraform-init-and-apply-to-production:
+      #     requires:
+      #       - assume-role-production
+      #     filters:
+      #       branches:
+      #         only: main
+      # - deploy-to-production:
+      #     context:
+      #       - api-nuget-token-context
+      #       - "Serverless Framework"
+      #     requires:
+      #       - permit-production-release
+      #       - assume-role-production
+      #       - terraform-init-and-apply-to-production
+      #     filters:
+      #       branches:
+      #         only: main
