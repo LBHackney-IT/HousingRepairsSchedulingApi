@@ -1,10 +1,7 @@
 version: 2.1
 
-
 orbs:
-  aws-ecr: circleci/aws-ecr@3.0.0
-  aws-cli: circleci/aws-cli@0.1.9
-  aws_assume_role: lbh-hackit/aws_assume_role@0.1.0
+  aws_assume_role: lbh-hackit/aws_assume_role@0.1.1
 
 executors:
   docker-python:
@@ -15,7 +12,7 @@ executors:
       - image: "hashicorp/terraform:light"
   docker-dotnet:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:8.0
+      - image: mcr.microsoft.com/dotnet/sdk:10.0
 
 references:
   workspace_root: &workspace_root "~"
@@ -123,17 +120,6 @@ jobs:
       - run:
           name: Run tests
           command: dotnet test
-  deploy-to-development:
-    executor: docker-dotnet
-    steps:
-      - authenticate-nuget
-      - deploy-lambda:
-          stage: "development"
-  assume-role-development:
-    executor: docker-python
-    steps:
-      - assume-role-and-persist-workspace:
-          aws-account: $AWS_ACCOUNT_DEVELOPMENT
   deploy-to-staging:
     executor: docker-dotnet
     steps:
@@ -156,11 +142,6 @@ jobs:
     steps:
       - assume-role-and-persist-workspace:
           aws-account: $AWS_ACCOUNT_PRODUCTION
-  terraform-init-and-apply-to-development:
-    executor: docker-terraform
-    steps:
-      - terraform-init-then-apply:
-          environment: "development"
   terraform-init-and-apply-to-staging:
     executor: docker-terraform
     steps:
@@ -172,29 +153,6 @@ jobs:
       - terraform-init-then-apply:
           environment: "production"
 workflows:
-  # check-and-deploy-development:
-  #   jobs:
-  #     - check-code-formatting:
-  #         context: api-nuget-token-context
-  #     - build-and-test:
-  #         context: api-nuget-token-context
-  #     - assume-role-development:
-  #         context: api-assume-role-housing-development-context
-  #         requires:
-  #           - build-and-test
-  #         filters:
-  #           branches:
-  #             only: development
-  #     - terraform-init-and-apply-to-development:
-  #         requires:
-  #           - assume-role-development
-  #         filters:
-  #           branches:
-  #             only: development
-  #     - deploy-to-development:
-  #         requires:
-  #           - assume-role-development
-  #           - terraform-init-and-apply-to-development
   check-and-deploy-staging-and-production:
     jobs:
       - check-code-formatting
